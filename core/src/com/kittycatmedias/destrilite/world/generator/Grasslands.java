@@ -92,17 +92,16 @@ public class Grasslands extends WorldGenerator {
             double range = cave.range, rangeMax = range + 5, lx = cave.x, ly = cave.y;
             int upToX = (int) (lx + rangeMax + 1), upToY = (int) (ly + rangeMax + 1);
             for (int x = (int) (lx - rangeMax); x < upToX; x++)for (int y = (int) (ly - rangeMax); y < upToY; y++) {
-                if (inRange(x,y,width,height)) {
+                if (inRange(x,y)) {
                     double sqrt = Math.sqrt((x - lx) * (x - lx) + (y - ly) * (y - ly));
                     if(sqrt <= rangeMax){
                         BlockState state = blocks[x][y];
-                        boolean flowered = random.nextInt(10) == 0;
                         if(sqrt < range) {
                             if(sqrt < range-2)state.setWall(WallType.AIR);
-                            else if(!state.getWall().isAir())state.setWall(flowered ? WallType.FLOWERED : WallType.GRASS);
+                            else if(!state.getWall().isAir())state.setWall(WallType.GRASS);
                             state.setType(BlockType.AIR);
                         }else if(!state.getType().isAir()){
-                            state.setWall(flowered ? WallType.FLOWERED : WallType.GRASS);
+                            state.setWall(WallType.GRASS);
                             state.setType(BlockType.DIRT);
                         }
                     }
@@ -110,13 +109,17 @@ public class Grasslands extends WorldGenerator {
             }
         }
 
+        smooth(blocks, 2);
+
+        for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)if(blocks[x][y].getWall() == WallType.GRASS && random.nextInt(10) == 0)blocks[x][y].setWall(WallType.FLOWERED);
+
         BlockState t, t2, t3, t4;
         BlockType type;
         for(int x = 0; x < width; x++)for(int y = 0; y < height - 1; y++){
             t = blocks[x][y];
             t2 = blocks[x][y+1];
-            t3 = inRange(x+1,y+1,width,height) ? blocks[x+1][y+1] : null;
-            t4 = inRange(x+1,y,width,height) ? blocks[x+1][y] : null;
+            t3 = inRange(x+1,y+1) ? blocks[x+1][y+1] : null;
+            t4 = inRange(x+1,y) ? blocks[x+1][y] : null;
             if (t.getType() == BlockType.DIRT && !t2.isCollidable()){
                 t.setType(BlockType.GRASS);
                 if(t2.getType().isAir() && random.nextBoolean()){
@@ -148,10 +151,6 @@ public class Grasslands extends WorldGenerator {
         }
 
         return blocks;
-    }
-
-    private boolean inRange(int x, int y, int width, int height){
-        return x >= 0 && x < width && y >= 0 && y < height;
     }
 
     private static class Cave{
