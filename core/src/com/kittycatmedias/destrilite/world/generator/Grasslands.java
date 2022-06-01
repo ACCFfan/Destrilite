@@ -11,13 +11,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Grasslands extends WorldGenerator {
-    public Grasslands(long seed, int width, int height) {
-        super(seed, width, height);
-    }
-
 
     @Override
-    public BlockState[][] generateBlocks() {
+    public BlockState[][] generateBlocks(Random random, int width, int height) {
         BlockState[][] blocks = new BlockState[width][height];
 
         ArrayList<Cave> caves = new ArrayList<>();
@@ -92,7 +88,7 @@ public class Grasslands extends WorldGenerator {
             double range = cave.range, rangeMax = range + 5, lx = cave.x, ly = cave.y;
             int upToX = (int) (lx + rangeMax + 1), upToY = (int) (ly + rangeMax + 1);
             for (int x = (int) (lx - rangeMax); x < upToX; x++)for (int y = (int) (ly - rangeMax); y < upToY; y++) {
-                if (inRange(x,y)) {
+                if (inRange(x,y,width,height)) {
                     double sqrt = Math.sqrt((x - lx) * (x - lx) + (y - ly) * (y - ly));
                     if(sqrt <= rangeMax){
                         BlockState state = blocks[x][y];
@@ -109,7 +105,7 @@ public class Grasslands extends WorldGenerator {
             }
         }
 
-        smooth(blocks, 2);
+        smooth(blocks, random,2);
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)if(blocks[x][y].getWall() == WallType.GRASS && random.nextInt(10) == 0)blocks[x][y].setWall(WallType.FLOWERED);
 
@@ -118,8 +114,8 @@ public class Grasslands extends WorldGenerator {
         for(int x = 0; x < width; x++)for(int y = 0; y < height - 1; y++){
             t = blocks[x][y];
             t2 = blocks[x][y+1];
-            t3 = inRange(x+1,y+1) ? blocks[x+1][y+1] : null;
-            t4 = inRange(x+1,y) ? blocks[x+1][y] : null;
+            t3 = inRange(x+1,y+1,width,height) ? blocks[x+1][y+1] : null;
+            t4 = inRange(x+1,y,width,height) ? blocks[x+1][y] : null;
             if (t.getType() == BlockType.DIRT && !t2.isCollidable()){
                 t.setType(BlockType.GRASS);
                 if(t2.getType().isAir() && random.nextBoolean()){

@@ -1,20 +1,15 @@
 package com.kittycatmedias.destrilite.client;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.kittycatmedias.destrilite.event.EventHandler;
 import com.kittycatmedias.destrilite.event.EventListener;
-import com.kittycatmedias.destrilite.event.events.network.ConnectionDisconnectedEvent;
-import com.kittycatmedias.destrilite.event.events.network.ConnectionMadeEvent;
 import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
-import com.kittycatmedias.destrilite.network.packet.packets.WorldBlockInfoPacket;
+import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
@@ -71,13 +66,8 @@ public class MainMenuScreen implements DestriliteScreen, PacketListener, EventLi
     }
 
     @PacketHandler
-    public void onWorldBlockInfo(WorldBlockInfoPacket packet){
-        if(game.isClient()) {
-            BlockState[][] blocks = WorldBlockInfoPacket.decode(packet);
-            World world = new World(blocks);
-            GameScreen screen = new GameScreen(game, world);
-            game.changeScreen(screen);
-        }
+    public void onWorldBlockInfo(WorldCreatePacket packet){
+        if(game.isClient())game.changeScreen(new GameScreen(game, WorldCreatePacket.decode(packet)));
     }
 
     @Override

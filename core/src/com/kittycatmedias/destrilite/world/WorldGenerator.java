@@ -1,29 +1,41 @@
 package com.kittycatmedias.destrilite.world;
 
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
+import com.kittycatmedias.destrilite.world.generator.Grasslands;
 
 import java.util.Random;
 
 public abstract class WorldGenerator {
 
-    protected final int width, height;
-    protected final long seed;
+    private int ID;
 
-    protected final Random random;
+    private static Array<WorldGenerator> generators = new Array<>();
+    private static int nextID = 0;
 
-    public WorldGenerator(long seed, int width, int height){
-        this.width = width;
-        this.height = height;
-        this.seed = seed;
-        random = new Random(seed);
+    public static WorldGenerator GRASSLANDS = addGenerator(new Grasslands());
+
+    private static WorldGenerator addGenerator(WorldGenerator generator){
+        generator.ID = nextID++;
+        generators.add(generator);
+        return generator;
     }
 
-    public abstract BlockState[][] generateBlocks();
+    public static WorldGenerator getGenerator(int id){
+        return generators.get(id);
+    }
 
-    protected void smooth(BlockState[][] blocks, int iterations) {
+    public int getID() {
+        return ID;
+    }
+
+    public abstract BlockState[][] generateBlocks(Random random, int width, int height);
+
+    protected void smooth(BlockState[][] blocks, Random random, int iterations) {
+        int width = blocks.length, height = blocks[0].length;
         BlockType[][] newTypes = new BlockType[width][height], oldTypes = new BlockType[width][height];
         WallType[][] newWalls = new WallType[width][height], oldWalls = new WallType[width][height];
 
@@ -53,7 +65,7 @@ public abstract class WorldGenerator {
 
                     for (int x2 = -1; x2 < 2; x2++)
                         for (int y2 = -1; y2 < 2; y2++) {
-                            if (x2 != x && y2 != y && inRange(x + x2, y + y2)) {
+                            if (x2 != x && y2 != y && inRange(x + x2, y + y2, width, height)) {
                                 a++;
                                 if(!oldTypes[x+x2][y+y2].isAir()){
                                     t++;
@@ -99,21 +111,5 @@ public abstract class WorldGenerator {
             }
     }
 
-    public int getHeight() {
-        return height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public Random getRandom() {
-        return random;
-    }
-
-    public long getSeed() {
-        return seed;
-    }
-
-    protected boolean inRange(int x, int y) {return x>=0&&x<width&&y>=0&&y<height;}
+    protected boolean inRange(int x, int y, int width, int height) {return x>=0&&x<width&&y>=0&&y<height;}
 }

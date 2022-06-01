@@ -8,7 +8,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionDisconnectedEvent;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionMadeEvent;
-import com.kittycatmedias.destrilite.network.packet.packets.WorldBlockInfoPacket;
+import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 
 public class DestriliteServer extends Listener {
     public static final int DEFAULT_PORT = 37189;
@@ -23,7 +23,7 @@ public class DestriliteServer extends Listener {
     private boolean ready;
 
     public DestriliteServer(DestriliteGame game) {
-        server = new Server(131072, 131072);
+        server = new Server();
         UDP_PORT = DEFAULT_PORT;
         TCP_PORT = DEFAULT_PORT+1;
 
@@ -37,7 +37,7 @@ public class DestriliteServer extends Listener {
     }
 
     public DestriliteServer(DestriliteGame game, int udp, int tcp){
-        server = new Server(131072, 131072);
+        server = new Server();
         UDP_PORT = udp;
         TCP_PORT = tcp;
 
@@ -113,13 +113,7 @@ public class DestriliteServer extends Listener {
     }
 
     public static void registerPackets(Kryo kryo){
-        kryo.register(int[][][].class);
-        kryo.register(int[][].class);
-        kryo.register(int[].class);
-        kryo.register(String[][][].class);
-        kryo.register(String[][].class);
-        kryo.register(String[].class);
-        kryo.register(WorldBlockInfoPacket.class);
+        kryo.register(WorldCreatePacket.class);
     }
 
 }

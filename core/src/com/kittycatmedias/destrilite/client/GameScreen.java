@@ -14,11 +14,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
-import com.kittycatmedias.destrilite.network.packet.packets.WorldBlockInfoPacket;
+import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 import com.kittycatmedias.destrilite.world.World;
+import com.kittycatmedias.destrilite.world.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
-import com.kittycatmedias.destrilite.world.generator.Grasslands;
 
 public class GameScreen implements DestriliteScreen, PacketListener {
     private final Viewport worldViewport;
@@ -57,8 +57,8 @@ public class GameScreen implements DestriliteScreen, PacketListener {
 
         assetManager.load("atlas/tiles.atlas", TextureAtlas.class);
 
-        if(!game.isClient() && this.world == null)this.world = new World(new Grasslands(MathUtils.random.nextLong(), 200, 100));
-        if(game.isServer())game.getServer().sendToAll(WorldBlockInfoPacket.create(this.world), true);
+        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong(), 200, 100);
+        if(game.isServer())game.getServer().sendToAll(WorldCreatePacket.create(this.world), true);
 
         bufferViewMatrix = new Matrix4();
 

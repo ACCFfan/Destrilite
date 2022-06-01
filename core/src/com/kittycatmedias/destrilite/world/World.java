@@ -17,31 +17,27 @@ import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
 
+import java.util.Random;
+
 public class World  {
     private final WorldGenerator generator;
     private final BlockState[][] blocks;
     private final int width, height;
+    private final long seed;
 
     private final Rectangle viewBounds;
+    private final Random random;
 
     private float gravity;
 
 
-    public World(WorldGenerator generator){
+    public World(WorldGenerator generator, long seed, int width, int height){
         this.generator = generator;
-        blocks = generator.generateBlocks();
-        width = generator.getWidth();
-        height = generator.getHeight();
-        gravity = 0.1f;
-        viewBounds = new Rectangle();
-        for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)blocks[x][y].getType().onWorldLoad(this);
-    }
-
-    public World(BlockState[][] blocks){
-        this.blocks = blocks;
-        generator = null;
-        width = blocks.length;
-        height = blocks[0].length;
+        this.width = width;
+        this.height = height;
+        this.seed = seed;
+        random = new Random(seed);
+        blocks = generator.generateBlocks(random, width, height);
         gravity = 0.1f;
         viewBounds = new Rectangle();
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)blocks[x][y].getType().onWorldLoad(this);
@@ -97,6 +93,22 @@ public class World  {
 
     public BlockState[][] getBlocks() {
         return blocks;
+    }
+
+    public long getSeed() {
+        return seed;
+    }
+
+    public Random getRandom() {
+        return random;
+    }
+
+    public float getGravity() {
+        return gravity;
+    }
+
+    public WorldGenerator getGenerator() {
+        return generator;
     }
 
     public int getWidth() {
