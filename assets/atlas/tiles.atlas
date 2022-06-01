@@ -1,89 +1,159 @@
 
 tiles.png
-size: 64, 32
+size: 128, 32
 format: RGBA8888
 filter: Nearest, Nearest
 repeat: none
 blocks/blackstone
   rotate: false
-  xy: 25, 1
+  xy: 95, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/chest
+  rotate: false
+  xy: 85, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/chest_open
+  rotate: false
+  xy: 95, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
 blocks/dirt
   rotate: false
-  xy: 45, 1
+  xy: 115, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-blocks/glowberry
+blocks/entrance_bottom
   rotate: false
-  xy: 25, 11
+  xy: 45, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-blocks/grass
+blocks/entrance_top
+  rotate: false
+  xy: 75, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/exit_bottom
   rotate: false
   xy: 45, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-blocks/log_left
+blocks/exit_top
   rotate: false
-  xy: 35, 1
+  xy: 105, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-blocks/log_left_mush
-  rotate: false
-  xy: 55, 1
-  size: 8, 8
-  orig: 8, 8
-  offset: 0, 0
-  index: -1
-blocks/log_right
-  rotate: false
-  xy: 55, 21
-  size: 8, 8
-  orig: 8, 8
-  offset: 0, 0
-  index: -1
-blocks/log_right_mush
-  rotate: false
-  xy: 55, 11
-  size: 8, 8
-  orig: 8, 8
-  offset: 0, 0
-  index: -1
-blocks/rose
-  rotate: false
-  xy: 35, 11
-  size: 8, 8
-  orig: 8, 8
-  offset: 0, 0
-  index: -1
-blocks/short_grass
+blocks/glowberry
   rotate: false
   xy: 35, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-blocks/stone
+blocks/grass
+  rotate: false
+  xy: 55, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/log_left
+  rotate: false
+  xy: 105, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/log_left_mush
+  rotate: false
+  xy: 25, 1
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/log_right
+  rotate: false
+  xy: 65, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/log_right_mush
+  rotate: false
+  xy: 85, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/platform
+  rotate: false
+  xy: 75, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/platform_intersection
+  rotate: false
+  xy: 35, 1
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/roots
   rotate: false
   xy: 25, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
+blocks/rose
+  rotate: false
+  xy: 55, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/short_grass
+  rotate: false
+  xy: 35, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/stone
+  rotate: false
+  xy: 25, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
 blocks/tall_grass
   rotate: false
-  xy: 45, 11
+  xy: 65, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/wood_beam
+  rotate: false
+  xy: 115, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0

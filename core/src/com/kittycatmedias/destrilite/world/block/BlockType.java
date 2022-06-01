@@ -31,6 +31,12 @@ public class BlockType {
     public static final BlockType TALL_GRASS = registerType(new ShortGrassBlock());
     public static final BlockType SHORT_GRASS = registerType(new TallGrassBlock());
     public static final BlockType LOG = registerType(new LogBlock());
+    public static final BlockType BEAM = registerType(new BeamBlock());
+    public static final BlockType PLATFORM = registerType(new PlatformBlock());
+    public static final BlockType ROOT = registerType(new RootBlock());
+    public static final BlockType CHEST = registerType(new ChestBlock());
+    public static final BlockType ENTRANCE = registerType(new EntranceBlock());
+    public static final BlockType EXIT = registerType(new ExitBlock());
 
 
     public static BlockType registerType(BlockType type){
