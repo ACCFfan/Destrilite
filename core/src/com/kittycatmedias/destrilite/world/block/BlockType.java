@@ -2,11 +2,8 @@ package com.kittycatmedias.destrilite.world.block;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.utils.Array;
-import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.blocktype.*;
-import sun.jvm.hotspot.opto.Block;
 
 public class BlockType {
 
@@ -15,7 +12,6 @@ public class BlockType {
 
     protected final String name;
 
-    protected World world;
     protected Sprite sprite;
 
     protected static final Array<BlockType> types = new Array<>();
@@ -55,7 +51,7 @@ public class BlockType {
         this.flippableX = flippableX;
         this.flippableY = flippableY;
         this.rotatable = rotatable;
-        id = getNextID();
+        id = nextID++;
     }
 
     public void update(BlockState blockState, float delta){
@@ -66,8 +62,8 @@ public class BlockType {
 
     }
 
-    public void onWorldLoad(World world){
-        this.world = world;
+    public void onWorldLoad(BlockState state){
+
     }
 
     public void onChange(BlockState state){
@@ -125,9 +121,5 @@ public class BlockType {
 
     public static BlockType getType(int id){
         return types.get(id);
-    }
-
-    public static int getNextID(){
-        return nextID++;
     }
 }

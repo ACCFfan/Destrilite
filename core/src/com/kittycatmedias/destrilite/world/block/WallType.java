@@ -36,7 +36,7 @@ public class WallType {
         this.flippableX = flippableX;
         this.flippableY = flippableY;
         this.rotatable = rotatable;
-        id = getNextID();
+        id = nextID++;
     }
     public boolean isAir(){return this == AIR;}
 
@@ -78,9 +78,5 @@ public class WallType {
 
     public static WallType getType(int id){
         return types.get(id);
-    }
-
-    public static int getNextID(){
-        return nextID++;
     }
 }

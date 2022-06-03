@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionDisconnectedEvent;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionMadeEvent;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
 import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 
 public class DestriliteServer extends Listener {
@@ -114,6 +115,9 @@ public class DestriliteServer extends Listener {
 
     public static void registerPackets(Kryo kryo){
         kryo.register(WorldCreatePacket.class);
+        kryo.register(EntityCreatePacket.class);
+        kryo.register(String[].class);
+        kryo.register(int[].class);
     }
 
 }

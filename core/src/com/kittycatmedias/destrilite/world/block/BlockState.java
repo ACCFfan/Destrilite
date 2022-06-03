@@ -7,11 +7,13 @@ import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.event.events.update.world.block.BlockDamageEvent;
 import com.kittycatmedias.destrilite.event.events.update.world.block.BlockDestroyEvent;
 import com.kittycatmedias.destrilite.world.Location;
+import com.kittycatmedias.destrilite.world.World;
 
 import java.util.Map;
 
 public class BlockState {
     private final int x, y;
+    private World world;
     private BlockType type;
     private WallType wall;
 
@@ -145,5 +147,11 @@ public class BlockState {
 
     public void setWall(WallType type){wall = type;}
 
+    public World getWorld() {
+        return world;
+    }
 
+    public void setWorld(World world) {
+        this.world = world;
+    }
 }

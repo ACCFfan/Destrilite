@@ -1,25 +1,25 @@
 package com.kittycatmedias.destrilite.world;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.viewport.Viewport;
-import com.kittycatmedias.destrilite.client.GameScreen;
+import com.badlogic.gdx.utils.Array;
+import com.kittycatmedias.destrilite.client.DestriliteGame;
+import com.kittycatmedias.destrilite.entity.Entity;
+import com.kittycatmedias.destrilite.event.EventListener;
+import com.kittycatmedias.destrilite.network.packet.PacketHandler;
+import com.kittycatmedias.destrilite.network.packet.PacketListener;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
+import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
 
 import java.util.Random;
 
-public class World  {
+public class World implements EventListener, PacketListener {
     private final WorldGenerator generator;
     private final BlockState[][] blocks;
     private final int width, height;
@@ -28,8 +28,15 @@ public class World  {
     private final Rectangle viewBounds;
     private final Random random;
 
+    private Array<Entity> entities;
+
     private float gravity;
 
+    private int id;
+
+    private static int nextID = 0;
+
+    public static final Array<World> worlds = new Array<>();
 
     public World(WorldGenerator generator, long seed){
         this.generator = generator;
@@ -40,7 +47,52 @@ public class World  {
         height = blocks[0].length;
         gravity = 0.1f;
         viewBounds = new Rectangle();
-        for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)blocks[x][y].getType().onWorldLoad(this);
+        id = nextID++;
+        worlds.add(this);
+        entities = new Array<>();
+
+        DestriliteGame.getInstance().getEventManager().addListener(this);
+        DestriliteGame.getInstance().getPacketManager().addListener(this);
+
+        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(WorldCreatePacket.create(this), true);
+
+        for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
+            blocks[x][y].setWorld(this);
+            blocks[x][y].getType().onWorldLoad(blocks[x][y]);
+        }
+    }
+
+
+    //AGAIN, ONLY USE ON PACKETS
+    public World(WorldGenerator generator, long seed, int id){
+        this.generator = generator;
+        this.seed = seed;
+        random = new Random(seed);
+        blocks = generator.generateBlocks(random);
+        width = blocks.length;
+        height = blocks[0].length;
+        gravity = 0.1f;
+        viewBounds = new Rectangle();
+        this.id = id;
+        nextID = id+1;
+        worlds.add(this);
+        entities = new Array<>();
+
+        DestriliteGame.getInstance().getEventManager().addListener(this);
+        DestriliteGame.getInstance().getPacketManager().addListener(this);
+
+        for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
+            blocks[x][y].setWorld(this);
+            blocks[x][y].getType().onWorldLoad(blocks[x][y]);
+        }
+    }
+
+    public void createEntity(Entity entity){
+        //TODO events, you know the deal
+
+
+        entities.add(entity);
+        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(EntityCreatePacket.create(entity), true);
     }
 
     public BlockState setBlock(int x, int y, BlockType type){
@@ -71,7 +123,7 @@ public class World  {
         viewBounds.set(camera.position.x - w / 2, camera.position.y - h / 2, w, h);
     }
 
-    public void render(Batch batch, float delta, boolean wall){
+    public void renderBlocks(SpriteBatch batch, float delta, boolean wall){
         final int col1 = Math.max(0, (int)(viewBounds.x - 1)),
                 col2 = Math.min(width, (int)((viewBounds.x + viewBounds.width + 2))),
                 row1 = Math.max(0, (int)(viewBounds.y - 1)),
@@ -89,6 +141,10 @@ public class World  {
                 sprite.rotate((4 - state.getRotate()) * 90);
             }
         }
+    }
+
+    public void render(SpriteBatch batch, float delta){
+        for(Entity entity : entities)entity.render(batch, delta);
     }
 
     public BlockState[][] getBlocks() {
@@ -120,6 +176,25 @@ public class World  {
     }
 
     public void dispose(){
-
+        DestriliteGame.getInstance().getEventManager().removeListener(this);
+        DestriliteGame.getInstance().getPacketManager().removeListener(this);
+        worlds.removeValue(this, true);
     }
+
+    public int getID() {
+        return id;
+    }
+
+    public static World getWorld(int id){
+        for(World world : worlds)if(world.getID() == id)return world;
+        return null;
+    }
+
+
+
+    @PacketHandler
+    public void onEntityCreate(EntityCreatePacket packet){
+        if(packet.world == id)createEntity(EntityCreatePacket.decode(packet));
+    }
+
 }

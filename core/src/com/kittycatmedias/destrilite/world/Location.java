@@ -59,11 +59,15 @@ public class Location {
         return copy();
     }
 
-    public void move(float delta) {
+    public boolean move(float delta) {
+        float x1 = x, y1 = y, vX = velocity.x, vY = velocity.y, min = 0.1f;
         x += velocity.x * delta;
         y += velocity.y * delta;
         float pow = (float) Math.pow((1-velocity.z), delta);
-        velocity.set(velocity.x - pow, velocity.y - pow, velocity.z);
+        velocity.set(velocity.x * pow, velocity.y * pow, velocity.z);
+        if(velocity.x < min && velocity.x > -min)velocity.set(0,velocity.y,velocity.z);
+        if(velocity.y < min && velocity.y > -min)velocity.set(velocity.x,0,velocity.z);
+        return x1 != x || y1 != y || vX != velocity.x || vY != velocity.y;
     }
 
     public boolean isSamePlace(Location location) {

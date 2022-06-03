@@ -1,7 +1,13 @@
 package com.kittycatmedias.destrilite.world.block.blocktype;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.kittycatmedias.destrilite.client.DestriliteGame;
+import com.kittycatmedias.destrilite.entity.Entity;
+import com.kittycatmedias.destrilite.entity.EntityType;
+import com.kittycatmedias.destrilite.world.Location;
+import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 
@@ -18,6 +24,12 @@ public class LogBlock extends BlockType {
         sprite2 = atlas.createSprite("blocks/log_right");
         sprite3 = atlas.createSprite("blocks/log_left_mush");
         sprite4 = atlas.createSprite("blocks/log_right_mush");
+    }
+
+    @Override
+    public void onWorldLoad(BlockState state) {
+        super.onWorldLoad(state);
+        if(!DestriliteGame.getInstance().isClient())state.getWorld().createEntity(new Entity(new Location(state.getWorld(), state.getX(), state.getY()), EntityType.WORM, null));
     }
 
     @Override

@@ -135,7 +135,7 @@ public class Grasslands extends WorldGenerator {
                 if(t2.getType().isAir() && random.nextBoolean()){
                     type = random.nextBoolean() ? BlockType.SHORT_GRASS : BlockType.TALL_GRASS;
                     if(random.nextInt(4) == 0)type = random.nextInt(8) == 0 ? BlockType.GLOWBERRY : BlockType.ROSE;
-                    if(t3 != null && t4 != null && t4.isCollidable() && random.nextInt(16) == 0){
+                    if(t3 != null && t4 != null && t3.getType().isAir() && t4.isCollidable() && random.nextInt(16) == 0){
                         boolean half = random.nextBoolean();
                         type = BlockType.LOG;
                         t2.setType(type);
