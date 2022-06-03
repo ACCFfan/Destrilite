@@ -1,9 +1,9 @@
 package com.kittycatmedias.destrilite.world;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
@@ -12,6 +12,7 @@ import com.kittycatmedias.destrilite.event.EventListener;
 import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
 import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
@@ -39,13 +40,17 @@ public class World implements EventListener, PacketListener {
     public static final Array<World> worlds = new Array<>();
 
     public World(WorldGenerator generator, long seed){
+
+        DestriliteGame.getInstance().getEventManager().addListener(this);
+        DestriliteGame.getInstance().getPacketManager().addListener(this);
+
         this.generator = generator;
         this.seed = seed;
         random = new Random(seed);
         blocks = generator.generateBlocks(random);
         width = blocks.length;
         height = blocks[0].length;
-        gravity = 0.1f;
+        gravity = 4f;
         viewBounds = new Rectangle();
         id = nextID++;
         worlds.add(this);
@@ -65,6 +70,10 @@ public class World implements EventListener, PacketListener {
 
     //AGAIN, ONLY USE ON PACKETS
     public World(WorldGenerator generator, long seed, int id){
+
+        DestriliteGame.getInstance().getEventManager().addListener(this);
+        DestriliteGame.getInstance().getPacketManager().addListener(this);
+
         this.generator = generator;
         this.seed = seed;
         random = new Random(seed);
@@ -77,9 +86,6 @@ public class World implements EventListener, PacketListener {
         nextID = id+1;
         worlds.add(this);
         entities = new Array<>();
-
-        DestriliteGame.getInstance().getEventManager().addListener(this);
-        DestriliteGame.getInstance().getPacketManager().addListener(this);
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
             blocks[x][y].setWorld(this);
@@ -109,10 +115,9 @@ public class World implements EventListener, PacketListener {
         return state;
     }
 
-
-
     public void update(float delta){
-
+        for(BlockState[] bStates : blocks)for(BlockState block : bStates)block.update(delta);
+        for(Entity entity : entities)entity.update(delta);
     }
 
     public void setBounds(OrthographicCamera camera){
@@ -176,9 +181,10 @@ public class World implements EventListener, PacketListener {
     }
 
     public void dispose(){
+        for(Entity entity : entities) entity.dispose();
+        worlds.removeValue(this, true);
         DestriliteGame.getInstance().getEventManager().removeListener(this);
         DestriliteGame.getInstance().getPacketManager().removeListener(this);
-        worlds.removeValue(this, true);
     }
 
     public int getID() {
@@ -190,11 +196,22 @@ public class World implements EventListener, PacketListener {
         return null;
     }
 
-
+    public boolean aboveIsOpen(int x, int y, float height){
+        final int upTo = (int) Math.min(y + MathUtils.ceil(height) + 1, this.height);
+        boolean open = true;
+        for(int i = y+1; i < upTo; i++)if(blocks[x][i].isCollidable())open = false;
+        return open;
+    }
 
     @PacketHandler
     public void onEntityCreate(EntityCreatePacket packet){
         if(packet.world == id)createEntity(EntityCreatePacket.decode(packet));
     }
 
+    @PacketHandler
+    public void onEntityMove(EntityMovePacket packet){
+        Entity entity = EntityMovePacket.decode(packet);
+        entity.setLocation(packet.x,packet.y);
+        entity.getLocation().getVelocity().set(packet.x, packet.y, entity.getLocation().getVelocity().z);
+    }
 }

@@ -3,14 +3,16 @@ package com.kittycatmedias.destrilite.entity.type;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.entity.EntityType;
+import com.kittycatmedias.destrilite.world.block.BlockState;
 
 public class Worm extends EntityType {
     private Sprite up, down;
 
     public Worm() {
-        super("worm", 1, false, true);
+        super("worm", 1, false, true, 0.625f, 0.25f, true, false);
     }
 
     @Override
@@ -20,7 +22,30 @@ public class Worm extends EntityType {
     }
 
     @Override
+    public void onCreate(Entity entity) {
+        super.onCreate(entity);
+        entity.setMeta("direction", entity.getLocation().getWorld().getRandom().nextBoolean() ? -1 : 1);
+    }
+
+    @Override
+    public void update(Entity entity, float delta) {
+        super.update(entity, delta);
+
+        if(!DestriliteGame.getInstance().isClient())entity.getLocation().getVelocity().x = entity.getMeta("direction");
+    }
+
+    @Override
+    public void onCollide(Entity entity, BlockState state, int from) {
+        super.onCollide(entity, state, from);
+        if(from == Entity.FROM_LEFT || from == Entity.FROM_RIGHT)entity.setMeta("direction", entity.getMeta("direction") * -1);
+    }
+
+    @Override
     public void render(SpriteBatch batch, Entity entity, float delta) {
-        batch.draw(up, entity.getLocation().getX(), entity.getLocation().getY(), 1, 0.75f);
+        boolean flip = entity.getMeta("direction") == 1;
+        Sprite sprite = up;
+        if(flip)sprite.flip(true, false);
+        batch.draw(sprite, entity.getLocation().getX()-0.125f, entity.getLocation().getY()-0.125f, entity.getWidth()+0.25f, entity.getHeight()+0.25f);
+        if(flip)sprite.flip(true, false);
     }
 }

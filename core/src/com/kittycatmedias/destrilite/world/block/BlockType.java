@@ -3,6 +3,8 @@ package com.kittycatmedias.destrilite.world.block;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
+import com.kittycatmedias.destrilite.entity.Entity;
+import com.kittycatmedias.destrilite.world.Location;
 import com.kittycatmedias.destrilite.world.block.blocktype.*;
 
 public class BlockType {
@@ -73,6 +75,27 @@ public class BlockType {
     public void onMetaChange(BlockState state){
 
     }
+
+    public void onCollide(BlockState state, Entity entity, int from){
+        Location location = entity.getLocation();
+
+        if((from == Entity.FROM_LEFT || from == Entity.FROM_RIGHT) && entity.walksUp() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight()))
+            entity.setLocation(location.getX(), state.getY()+1);
+        else if(from == Entity.FROM_LEFT){
+            entity.setLocation(state.getX() - entity.getWidth(), location.getY());
+            location.getVelocity().x = 0;
+        } else if(from == Entity.FROM_RIGHT){
+            entity.setLocation(state.getX()+1, location.getY());
+            location.getVelocity().x = 0;
+        } else if(from == Entity.FROM_BOTTOM){
+            entity.setLocation(location.getX(), state.getY()-entity.getHeight());
+            location.getVelocity().y = 0;
+        } else {
+            entity.setLocation(location.getX(), state.getY()+1);
+            location.getVelocity().y = 0;
+        }
+    }
+
 
     public void onDestroy(BlockState blockState){
 

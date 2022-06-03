@@ -10,13 +10,17 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.kittycatmedias.destrilite.entity.EntityType;
+import com.kittycatmedias.destrilite.event.EventListener;
+import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
 
-public class GameScreen extends DestriliteScreen implements PacketListener {
+public class GameScreen extends DestriliteScreen implements EventListener, PacketListener {
     private final OrthographicCamera camera;
     private final Matrix4 bufferViewMatrix, bufferMatrix;
 
@@ -42,13 +46,16 @@ public class GameScreen extends DestriliteScreen implements PacketListener {
         assetManager.load("atlas/tiles.atlas", TextureAtlas.class);
         assetManager.load("atlas/entities.atlas", TextureAtlas.class);
 
-        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
+        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, 3);//MathUtils.random.nextLong());
 
         bufferViewMatrix = new Matrix4();
         bufferMatrix = new Matrix4();
 
         offsetX = 1f/(this.world.getWidth()*8);
         offsetY = 1f/(this.world.getHeight()*8);
+
+        game.getEventManager().addListener(this);
+        game.getPacketManager().addListener(this);
     }
 
     @Override
@@ -151,6 +158,8 @@ public class GameScreen extends DestriliteScreen implements PacketListener {
         bufferBlockTexture.dispose();
         bufferWallTexture.dispose();
         outlineShader.dispose();
+        game.getPacketManager().removeListener(this);
+        game.getEventManager().removeListener(this);
 
     }
 

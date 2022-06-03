@@ -28,7 +28,7 @@ public class DestriliteGame extends Game {
 	private DestriliteServer server;
 	private DestriliteClient client;
 
-	final static String VERSION = "Pre-Alpha v0.0.2";
+	final static String VERSION = "Pre-Alpha v0.0.3";
 	final static String NAME = "Destrilite";
 
 

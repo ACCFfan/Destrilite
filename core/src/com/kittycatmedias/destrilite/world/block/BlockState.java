@@ -1,18 +1,18 @@
 package com.kittycatmedias.destrilite.world.block;
 
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
+import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.event.events.update.world.block.BlockDamageEvent;
 import com.kittycatmedias.destrilite.event.events.update.world.block.BlockDestroyEvent;
-import com.kittycatmedias.destrilite.world.Location;
 import com.kittycatmedias.destrilite.world.World;
-
-import java.util.Map;
 
 public class BlockState {
     private final int x, y;
+    private final Rectangle bounds;
     private World world;
     private BlockType type;
     private WallType wall;
@@ -27,6 +27,7 @@ public class BlockState {
         this.y = y;
         meta = new ObjectMap<>();
         this.wall = WallType.AIR;
+        bounds = new Rectangle(x,y,1,1);
         setType(type);
     }
 
@@ -35,6 +36,7 @@ public class BlockState {
         this.y = y;
         meta = new ObjectMap<>();
         this.wall = wall;
+        bounds = new Rectangle(x,y,1,1);
         setType(block);
     }
 
@@ -153,5 +155,16 @@ public class BlockState {
 
     public void setWorld(World world) {
         this.world = world;
+    }
+
+    public Rectangle getBounds() {
+        return bounds;
+    }
+
+    public void collides(Entity entity, int from){
+        //TODO events
+        type.onCollide(this, entity, from);
+
+
     }
 }

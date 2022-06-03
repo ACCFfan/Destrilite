@@ -1,16 +1,17 @@
 package com.kittycatmedias.destrilite.entity;
 
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
 import com.kittycatmedias.destrilite.entity.type.Worm;
 import com.kittycatmedias.destrilite.world.World;
+import com.kittycatmedias.destrilite.world.block.BlockState;
 
 public abstract class EntityType {
 
     protected final int maxHealth, id;
-    protected final boolean indestructible, collidable;
+    protected final boolean indestructible, collidable, hasGravity, walksUp;
+    protected final float width, height;
 
     protected final String name;
 
@@ -25,12 +26,16 @@ public abstract class EntityType {
         return type;
     }
 
-    protected EntityType(String name, int maxHealth, boolean indestructible, boolean collidable){
+    protected EntityType(String name, int maxHealth, boolean indestructible, boolean collidable, float width, float height, boolean hasGravity, boolean walksUp){
         this.maxHealth = maxHealth;
         this.indestructible = indestructible;
         this.collidable = collidable;
         this.name = name;
         id = nextID++;
+        this.width = width;
+        this.height = height;
+        this.walksUp = walksUp;
+        this.hasGravity = hasGravity;
     }
 
     public void update(Entity entity, float delta){
@@ -51,6 +56,10 @@ public abstract class EntityType {
 
     public void onDestroy(Entity entity){
 
+
+    }
+
+    public void onCollide(Entity entity, BlockState state, int from){
 
     }
 
@@ -86,4 +95,19 @@ public abstract class EntityType {
         return nextID++;
     }
 
+    public float getHeight() {
+        return height;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public boolean hasGravity() {
+        return hasGravity;
+    }
+
+    public boolean walksUp() {
+        return walksUp;
+    }
 }

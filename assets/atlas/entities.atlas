@@ -6,15 +6,15 @@ filter: Nearest, Nearest
 repeat: none
 worm_down
   rotate: false
-  xy: 9, 1
-  size: 6, 4
-  orig: 6, 4
+  xy: 1, 1
+  size: 7, 4
+  orig: 7, 4
   offset: 0, 0
   index: -1
 worm_up
   rotate: false
-  xy: 1, 1
-  size: 6, 4
-  orig: 6, 4
+  xy: 1, 7
+  size: 7, 4
+  orig: 7, 4
   offset: 0, 0
   index: -1
