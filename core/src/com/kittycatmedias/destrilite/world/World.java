@@ -31,13 +31,13 @@ public class World  {
     private float gravity;
 
 
-    public World(WorldGenerator generator, long seed, int width, int height){
+    public World(WorldGenerator generator, long seed){
         this.generator = generator;
-        this.width = width;
-        this.height = height;
         this.seed = seed;
         random = new Random(seed);
-        blocks = generator.generateBlocks(random, width, height);
+        blocks = generator.generateBlocks(random);
+        width = blocks.length;
+        height = blocks[0].length;
         gravity = 0.1f;
         viewBounds = new Rectangle();
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)blocks[x][y].getType().onWorldLoad(this);

@@ -6,28 +6,28 @@ filter: Nearest, Nearest
 repeat: none
 blocks/blackstone
   rotate: false
-  xy: 95, 21
+  xy: 95, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
 blocks/chest
   rotate: false
-  xy: 85, 11
+  xy: 95, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
 blocks/chest_open
   rotate: false
-  xy: 95, 11
+  xy: 105, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
 blocks/dirt
   rotate: false
-  xy: 115, 11
+  xy: 25, 1
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
@@ -55,7 +55,7 @@ blocks/exit_bottom
   index: -1
 blocks/exit_top
   rotate: false
-  xy: 105, 11
+  xy: 115, 21
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
@@ -74,16 +74,30 @@ blocks/grass
   orig: 8, 8
   offset: 0, 0
   index: -1
+blocks/large_root_bottom
+  rotate: false
+  xy: 85, 11
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+blocks/large_root_top
+  rotate: false
+  xy: 25, 21
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
 blocks/log_left
   rotate: false
-  xy: 105, 21
+  xy: 105, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
 blocks/log_left_mush
   rotate: false
-  xy: 25, 1
+  xy: 35, 1
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
@@ -111,14 +125,14 @@ blocks/platform
   index: -1
 blocks/platform_intersection
   rotate: false
-  xy: 35, 1
+  xy: 55, 1
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-blocks/roots
+blocks/root
   rotate: false
-  xy: 25, 21
+  xy: 45, 1
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
@@ -153,7 +167,7 @@ blocks/tall_grass
   index: -1
 blocks/wood_beam
   rotate: false
-  xy: 115, 21
+  xy: 115, 11
   size: 8, 8
   orig: 8, 8
   offset: 0, 0

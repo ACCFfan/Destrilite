@@ -34,6 +34,7 @@ public class BlockType {
     public static final BlockType BEAM = registerType(new BeamBlock());
     public static final BlockType PLATFORM = registerType(new PlatformBlock());
     public static final BlockType ROOT = registerType(new RootBlock());
+    public static final BlockType LARGE_ROOT = registerType(new LargeRootBlock());
     public static final BlockType CHEST = registerType(new ChestBlock());
     public static final BlockType ENTRANCE = registerType(new EntranceBlock());
     public static final BlockType EXIT = registerType(new ExitBlock());

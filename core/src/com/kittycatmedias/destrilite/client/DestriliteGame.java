@@ -1,9 +1,13 @@
 package com.kittycatmedias.destrilite.client;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.kittycatmedias.destrilite.event.EventManager;
 import com.kittycatmedias.destrilite.network.DestriliteClient;
 import com.kittycatmedias.destrilite.network.DestriliteServer;
@@ -13,21 +17,32 @@ public class DestriliteGame extends Game {
 	private static DestriliteGame instance;
 
 	private SpriteBatch batch;
+	private ShapeRenderer shapeRenderer;
 	private EventManager eventManager;
 	private PacketManager packetManager;
 	private DestriliteScreen nextScreen;
 	private BitmapFont font;
+	private Skin uiSkin;
+	private TextureAtlas uiAtlas;
 
 	private DestriliteServer server;
 	private DestriliteClient client;
+
+	final static String VERSION = "Pre-Alpha v0.0.1";
+	final static String NAME = "Destrilite";
+
 
 	@Override
 	public void create () {
 		instance = this;
 		batch = new SpriteBatch();
+		shapeRenderer = new ShapeRenderer();
 		eventManager = new EventManager();
 		packetManager = new PacketManager();
-		font = new BitmapFont();
+		font = new BitmapFont(Gdx.files.internal("font/font.fnt"), false);
+		uiAtlas = new TextureAtlas("atlas/ui.atlas");
+		uiSkin = new Skin(uiAtlas);
+
 		changeScreen(new MainMenuScreen(this));
 	}
 
@@ -35,7 +50,8 @@ public class DestriliteGame extends Game {
 	public void render () {
 		super.render();
 
-		if(nextScreen != null && nextScreen.getManager().update(17)){
+		if(nextScreen != null && nextScreen.getAssetManager().update(17)){
+			if(!nextScreen.isAssetsLoaded())nextScreen.loadAssets();
 			setScreen(nextScreen);
 			nextScreen = null;
 		}
@@ -44,14 +60,21 @@ public class DestriliteGame extends Game {
 	@Override
 	public void dispose () {
 		batch.dispose();
+		shapeRenderer.dispose();
 		if(nextScreen != null)nextScreen.dispose();
 		font.dispose();
 		if(server != null)server.stop();
 		if(client != null)client.stop();
+		uiAtlas.dispose();
+		uiSkin.dispose();
 	}
 
 	public SpriteBatch getBatch() {
 		return batch;
+	}
+
+	public ShapeRenderer getShapeRenderer() {
+		return shapeRenderer;
 	}
 
 	public static DestriliteGame getInstance() {
@@ -134,6 +157,14 @@ public class DestriliteGame extends Game {
 			client.stop();
 			client = null;
 		}
+	}
+
+	public Skin getUISkin() {
+		return uiSkin;
+	}
+
+	public TextureAtlas getUIAtlas() {
+		return uiAtlas;
 	}
 
 	public DestriliteServer getServer() {

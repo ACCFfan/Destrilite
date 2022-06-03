@@ -1,4 +1,4 @@
-name=tiles
+name=ui
 filename=
 output=../assets/atlas
 
@@ -19,7 +19,7 @@ paddingX=2
 paddingY=2
 pot=true
 mof=false
-rotation=true
+rotation=false
 stripWhitespaceX=false
 stripWhitespaceY=false
 wrapX=ClampToEdge
@@ -32,7 +32,7 @@ limitMemory=true
 useIndexes=true
 
 scaleFactors=[{suffix:"",factor:1,resampling:bicubic}]
-inputFiles=[{path:sprites/blocks,type:Input,dirFilePrefix:blocks/,recursive:true,flattenPaths:false},{path:sprites/walls,type:Input,dirFilePrefix:walls/,recursive:true,flattenPaths:false}]
+inputFiles=[{path:sprites/ui,type:Input,dirFilePrefix:null,recursive:true,flattenPaths:false}]
 keepInputFileExtensions=false
 
 

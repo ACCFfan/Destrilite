@@ -13,7 +13,9 @@ import java.util.Random;
 public class Grasslands extends WorldGenerator {
 
     @Override
-    public BlockState[][] generateBlocks(Random random, int width, int height) {
+    public BlockState[][] generateBlocks(Random random) {
+        int width = 200, height = 100;
+
         BlockState[][] blocks = new BlockState[width][height];
 
         ArrayList<Cave> caves = new ArrayList<>();
@@ -85,7 +87,7 @@ public class Grasslands extends WorldGenerator {
         }
 
         for(Cave cave : caves){
-            double range = cave.range, rangeMax = range + 5, lx = cave.x, ly = cave.y;
+            double range = cave.range, rangeMax = range + 7, lx = cave.x, ly = cave.y;
             int upToX = (int) (lx + rangeMax + 1), upToY = (int) (ly + rangeMax + 1);
             for (int x = (int) (lx - rangeMax); x < upToX; x++)for (int y = (int) (ly - rangeMax); y < upToY; y++) {
                 if (inRange(x,y,width,height)) {
@@ -105,9 +107,21 @@ public class Grasslands extends WorldGenerator {
             }
         }
 
-        smooth(blocks, random,2);
+        smooth(blocks, 2);
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)if(blocks[x][y].getWall() == WallType.GRASS && random.nextInt(10) == 0)blocks[x][y].setWall(WallType.FLOWERED);
+        for(int x = 0; x < width; x++)for(int y = 0; y < height - 1; y++)if(blocks[x][y].getType().isAir() && blocks[x][y+1].getType() == BlockType.DIRT && random.nextInt(4) == 0){
+            if(inRange(x,y-1,width,height) && random.nextBoolean()){
+                boolean flip = random.nextBoolean();
+                blocks[x][y].setType(BlockType.LARGE_ROOT);
+                blocks[x][y].setMeta("top", 1);
+                blocks[x][y].setMeta("flip", flip ? 1 : 0);
+                blocks[x][y-1].setType(BlockType.LARGE_ROOT);
+                blocks[x][y-1].setMeta("top", 0);
+                blocks[x][y-1].setMeta("flip", flip ? 1 : 0);
+
+            }else blocks[x][y].setType(BlockType.ROOT);
+        }
 
         BlockState t, t2, t3, t4;
         BlockType type;

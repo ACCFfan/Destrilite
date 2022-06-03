@@ -32,9 +32,9 @@ public abstract class WorldGenerator {
         return ID;
     }
 
-    public abstract BlockState[][] generateBlocks(Random random, int width, int height);
+    public abstract BlockState[][] generateBlocks(Random random);
 
-    protected void smooth(BlockState[][] blocks, Random random, int iterations) {
+    protected void smooth(BlockState[][] blocks, int iterations) {
         int width = blocks.length, height = blocks[0].length;
         BlockType[][] newTypes = new BlockType[width][height], oldTypes = new BlockType[width][height];
         WallType[][] newWalls = new WallType[width][height], oldWalls = new WallType[width][height];
@@ -82,7 +82,7 @@ public abstract class WorldGenerator {
                         tMax = BlockType.AIR;
                         for(BlockType ty : blockAmnt.keys()){
                             aM = blockAmnt.get(ty, -1);
-                            if(aM > tM || (aM == tM && random.nextBoolean()))tMax = ty;
+                            if(aM >= tM/* || (aM == tM && random.nextBoolean())*/)tMax = ty;
                         }
                         type = tMax;
                     }else type = BlockType.AIR;
@@ -91,7 +91,7 @@ public abstract class WorldGenerator {
                         wMax = WallType.AIR;
                         for(WallType wa : wallAmnt.keys()){
                             aM = wallAmnt.get(wa, -1);
-                            if(aM > wM || (aM == wM && random.nextBoolean()))wMax = wa;
+                            if(aM >= wM/* || (aM == wM && random.nextBoolean())*/)wMax = wa;
                         }
                         wall = wMax;
                     }else wall = WallType.AIR;
