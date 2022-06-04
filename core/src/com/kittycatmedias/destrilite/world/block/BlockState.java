@@ -20,7 +20,7 @@ public class BlockState {
     private boolean flipX, flipY, collidable;
     private int damage, rotate;
 
-    private final ObjectMap<String, Integer> meta;
+    private final ObjectMap<String, Object> meta;
 
     public BlockState(int x, int y, BlockType type){
         this.x = x;
@@ -62,11 +62,15 @@ public class BlockState {
         return c;
     }
 
-    public Integer getMeta(String key){
-        return meta.get(key, -1);
+    public Object getMeta(String key){
+        return meta.get(key, null);
     }
 
-    public void setMeta(String key, Integer meta){
+    public boolean hasMeta(String key){
+        return meta.containsKey(key);
+    }
+
+    public void setMeta(String key, Object meta){
         this.meta.put(key, meta);
         type.onMetaChange(this);
     }

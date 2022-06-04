@@ -3,6 +3,7 @@ package com.kittycatmedias.destrilite.world.block.blocktype;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.entity.EntityType;
@@ -29,21 +30,25 @@ public class LogBlock extends BlockType {
     @Override
     public void onWorldLoad(BlockState state) {
         super.onWorldLoad(state);
-        if(!DestriliteGame.getInstance().isClient())state.getWorld().createEntity(new Entity(new Location(state.getWorld(), state.getX(), state.getY()), EntityType.WORM, null));
+        if(!DestriliteGame.getInstance().isClient()){
+            ObjectMap<String, Object> meta = new ObjectMap<>();
+            meta.put("direction", state.getWorld().getRandom().nextBoolean() ? -1 : 1);
+            state.getWorld().createEntity(new Entity(new Location(state.getWorld(), state.getX(), state.getY()), EntityType.WORM, meta));
+        }
     }
 
     @Override
     public void onMetaChange(BlockState state) {
-        if(state.getMeta("flip") == 1)state.setFlips(true, false, 0);
+        if(state.hasMeta("flip") && (boolean)state.getMeta("flip"))state.setFlips(true, false, 0);
     }
 
     @Override
     public Sprite getSprite(BlockState state) {
-        if(state.getMeta("half") == 0){
-            if(state.getMeta("mush") == 0)return sprite;
+        if(!((boolean)state.getMeta("half"))){
+            if(!((boolean)state.getMeta("mush")))return sprite;
             else return sprite3;
         }
-        if(state.getMeta("mush") == 0)return sprite2;
+        if(!((boolean)state.getMeta("mush")))return sprite2;
         return sprite4;
     }
 }

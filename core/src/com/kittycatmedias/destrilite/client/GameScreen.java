@@ -11,12 +11,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.kittycatmedias.destrilite.entity.EntityType;
 import com.kittycatmedias.destrilite.event.EventListener;
-import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
-import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
-import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.world.World;
-import com.kittycatmedias.destrilite.world.WorldGenerator;
+import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
 
@@ -46,7 +43,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         assetManager.load("atlas/tiles.atlas", TextureAtlas.class);
         assetManager.load("atlas/entities.atlas", TextureAtlas.class);
 
-        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, 3);//MathUtils.random.nextLong());
+        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
 
         bufferViewMatrix = new Matrix4();
         bufferMatrix = new Matrix4();
@@ -87,7 +84,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         }
 
         if(world != null) {
-            world.update(delta);
+            world.update(Math.min(0.25f, delta));
 
             if(camera.position.x - camera.viewportWidth / 2 < 0)camera.position.x = 0 + camera.viewportWidth / 2;
             else if(camera.position.x + camera.viewportWidth / 2 > world.getWidth())camera.position.x = world.getWidth() - camera.viewportWidth / 2;

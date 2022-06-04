@@ -20,12 +20,12 @@ public class ChestBlock extends BlockType {
 
     @Override
     public void onMetaChange(BlockState state) {
-        if(state.getMeta("left") == 0)state.setFlips(true, false, 0);
+        if(!((boolean) state.getMeta("left")))state.setFlips(true, false, 0);
     }
 
     @Override
     public Sprite getSprite(BlockState state) {
-        if(state.getMeta("open") == 0)return sprite;
+        if(!((boolean) state.getMeta("open")))return sprite;
         return sprite2;
     }
 }

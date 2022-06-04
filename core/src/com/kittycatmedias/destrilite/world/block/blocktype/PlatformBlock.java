@@ -20,7 +20,7 @@ public class PlatformBlock extends BlockType {
 
     @Override
     public Sprite getSprite(BlockState state) {
-        if(state.getMeta("beam") == 1)return sprite2;
+        if((boolean)state.getMeta("beam"))return sprite2;
         return sprite;
     }
 }

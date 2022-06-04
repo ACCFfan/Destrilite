@@ -121,7 +121,7 @@ public class DestriliteServer extends Listener {
 
 
         kryo.register(String[].class);
-        kryo.register(int[].class);
+        kryo.register(Object[].class);
     }
 
 }

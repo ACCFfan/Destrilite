@@ -20,12 +20,12 @@ public class ExitBlock extends BlockType {
 
     @Override
     public void onMetaChange(BlockState state) {
-        if(state.getMeta("left") == 0)state.setFlips(true, false, 0);
+        if(!((boolean)state.getMeta("left")))state.setFlips(true, false, 0);
     }
 
     @Override
     public Sprite getSprite(BlockState state) {
-        if(state.getMeta("half") == 0)return sprite;
+        if(!((boolean)state.getMeta("half")))return sprite;
         return sprite2;
     }
 }

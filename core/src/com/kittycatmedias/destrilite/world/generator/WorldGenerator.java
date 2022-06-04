@@ -1,22 +1,30 @@
-package com.kittycatmedias.destrilite.world;
+package com.kittycatmedias.destrilite.world.generator;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
-import com.kittycatmedias.destrilite.world.generator.Grasslands;
+import com.kittycatmedias.destrilite.world.generator.generatortype.Grasslands;
 
+import java.awt.*;
 import java.util.Random;
 
 public abstract class WorldGenerator {
 
     private int ID;
 
+    protected GeneratorCellType START, END, BORDER;
+    protected final Array<GeneratorCellType> types;
+
     private static Array<WorldGenerator> generators = new Array<>();
     private static int nextID = 0;
 
     public static WorldGenerator GRASSLANDS = addGenerator(new Grasslands());
+
+    public WorldGenerator(){
+        types = new Array<>();
+    }
 
     private static WorldGenerator addGenerator(WorldGenerator generator){
         generator.ID = nextID++;
@@ -30,6 +38,80 @@ public abstract class WorldGenerator {
 
     public int getID() {
         return ID;
+    }
+
+    public GeneratorCell[][] generateCells(Random random, int columns, int rows, Point start, Point end){
+        GeneratorCell[][] cells = new GeneratorCell[columns][rows];
+
+        cells[start.x][start.y] = new GeneratorCell(start.x, start.y, this.START);
+        cells[end.x][end.y] = new GeneratorCell(end.x, end.y, this.END);
+
+        for(int x = 0; x < columns; x++)for(int y = 0; y < rows; y++)if(cells[x][y] == null){
+            if(x == 0 || x == columns - 1 || y == 0 || y == rows - 1)cells[x][y] = new GeneratorCell(x,y,BORDER);
+            else cells[x][y] = new GeneratorCell(x,y,types);
+        }
+        for(int x = 0; x < columns; x++)for(int y = 0; y < rows; y++)if(cells[x][y].getType() == null)startUpdate(cells[x][y], cells);
+
+        boolean finished = false;
+        while(!finished){
+            finished = true;
+
+            int num = -1;
+            Array<GeneratorCell> lowests = new Array<>();
+
+            for(int x = 0; x < columns; x++)for(int y = 0; y < rows; y++){
+                GeneratorCell cell = cells[x][y];
+                Array<GeneratorCellType> types = cell.getPossibleCells();
+                if(cell.getType() == null && types.size != 0) {
+                    finished = false;
+                    if (num == -1 || types.size <= num) {
+                        if (types.size < num || num == -1) {
+                            num = types.size;
+                            lowests.clear();
+                        }
+                        lowests.add(cell);
+                    }
+                }
+            }
+            if(lowests.isEmpty())finished = true;
+            else{
+                GeneratorCell cell = lowests.get(random.nextInt(lowests.size));
+                cell.setType(cell.getPossibleCells().get(random.nextInt(cell.getPossibleCells().size)));
+                startUpdate(cell, cells);
+            }
+        }
+
+        for(int x = 0; x < columns; x++)for(int y = 0; y < rows; y++)if(cells[x][y].getType() == null)cells[x][y].setType(BORDER);
+
+
+        return cells;
+    }
+
+    public void startUpdate(GeneratorCell cell, GeneratorCell[][] cells){
+        int x = cell.getX(), y = cell.getY();
+        GeneratorCell left = x < 1 ? null : cells[x-1][y],
+                right = x > cells.length-2 ? null : cells[x+1][y],
+                top = y > cells[x].length-2 ? null : cells[x][y+1],
+                bottom = y < 1 ? null : cells[x][y-1];
+        if(left != null && left.getType() == null)chainUpdate(left,cells);
+        if(right != null && right.getType() == null)chainUpdate(right,cells);
+        if(top != null && top.getType() == null)chainUpdate(top,cells);
+        if(bottom != null && bottom.getType() == null)chainUpdate(bottom,cells);
+    }
+
+    public void chainUpdate(GeneratorCell cell, GeneratorCell[][] cells){
+        int x = cell.getX(), y = cell.getY();
+        GeneratorCell left = x < 1 ? null : cells[x-1][y],
+                right = x > cells.length-2 ? null : cells[x+1][y],
+                top = y > cells[x].length-2 ? null : cells[x][y+1],
+                bottom = y < 1 ? null : cells[x][y-1];
+        boolean res = cells[x][y].update(left == null ? null : left.getPossibleCells(), right == null ? null : right.getPossibleCells(), top == null ? null : top.getPossibleCells(), bottom == null ? null : bottom.getPossibleCells());
+        if(res){
+            if(left != null && left.getType() == null)chainUpdate(left,cells);
+            if(right != null && right.getType() == null)chainUpdate(right,cells);
+            if(top != null && top.getType() == null)chainUpdate(top,cells);
+            if(bottom != null && bottom.getType() == null)chainUpdate(bottom,cells);
+        }
     }
 
     public abstract BlockState[][] generateBlocks(Random random);

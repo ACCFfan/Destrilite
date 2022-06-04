@@ -17,10 +17,13 @@ import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
+import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 
 import java.util.Random;
 
 public class World implements EventListener, PacketListener {
+    private static final float DEFAULT_GRAVITY = 8f;
+
     private final WorldGenerator generator;
     private final BlockState[][] blocks;
     private final int width, height;
@@ -50,7 +53,7 @@ public class World implements EventListener, PacketListener {
         blocks = generator.generateBlocks(random);
         width = blocks.length;
         height = blocks[0].length;
-        gravity = 4f;
+        gravity = DEFAULT_GRAVITY;
         viewBounds = new Rectangle();
         id = nextID++;
         worlds.add(this);
@@ -80,7 +83,7 @@ public class World implements EventListener, PacketListener {
         blocks = generator.generateBlocks(random);
         width = blocks.length;
         height = blocks[0].length;
-        gravity = 0.1f;
+        gravity = DEFAULT_GRAVITY;
         viewBounds = new Rectangle();
         this.id = id;
         nextID = id+1;
@@ -212,6 +215,6 @@ public class World implements EventListener, PacketListener {
     public void onEntityMove(EntityMovePacket packet){
         Entity entity = EntityMovePacket.decode(packet);
         entity.setLocation(packet.x,packet.y);
-        entity.getLocation().getVelocity().set(packet.x, packet.y, entity.getLocation().getVelocity().z);
+        entity.getLocation().getVelocity().set(packet.velX, packet.velY, entity.getLocation().getVelocity().z);
     }
 }

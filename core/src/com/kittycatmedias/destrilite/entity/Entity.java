@@ -17,7 +17,7 @@ public class Entity {
 
     private final Location location;
     private final EntityType type;
-    private final ObjectMap<String, Integer> meta;
+    private final ObjectMap<String, Object> meta;
     private final Rectangle bounds;
 
     private final int id;
@@ -28,7 +28,7 @@ public class Entity {
 
     public static final int FROM_LEFT = 0, FROM_RIGHT = 1, FROM_TOP = 2, FROM_BOTTOM = 3;
 
-    public Entity(Location location, EntityType type, ObjectMap<String, Integer> meta){
+    public Entity(Location location, EntityType type, ObjectMap<String, Object> meta){
         this.location = location;
         this.type = type;
         this.walksUp = getType().walksUp();
@@ -49,7 +49,7 @@ public class Entity {
 
 
     //ONLY FOR USE FROM PACKETS
-    public Entity(Location location, EntityType type, ObjectMap<String, Integer> meta, int id){
+    public Entity(Location location, EntityType type, ObjectMap<String, Object> meta, int id){
         this.location = location;
         this.type = type;
         this.walksUp = getType().walksUp();
@@ -210,13 +210,18 @@ public class Entity {
         return c;
     }
 
-    public Integer getMeta(String key){
-        return meta.get(key, -1);
+    public boolean hasMeta(String key){
+        return meta.containsKey(key);
+    }
+
+    public Object getMeta(String key){
+        return meta.get(key, null);
     }
 
     public void setMeta(String key, Integer meta){
         this.meta.put(key, meta);
         type.onMetaChange(this);
+        markDirty(true);
     }
 
     public static Array<Entity> getEntities() {

@@ -22,27 +22,21 @@ public class Worm extends EntityType {
     }
 
     @Override
-    public void onCreate(Entity entity) {
-        super.onCreate(entity);
-        entity.setMeta("direction", entity.getLocation().getWorld().getRandom().nextBoolean() ? -1 : 1);
-    }
-
-    @Override
     public void update(Entity entity, float delta) {
         super.update(entity, delta);
 
-        if(!DestriliteGame.getInstance().isClient())entity.getLocation().getVelocity().x = entity.getMeta("direction");
+        if(!DestriliteGame.getInstance().isClient())entity.getLocation().getVelocity().x = (int) entity.getMeta("direction");
     }
 
     @Override
     public void onCollide(Entity entity, BlockState state, int from) {
         super.onCollide(entity, state, from);
-        if(from == Entity.FROM_LEFT || from == Entity.FROM_RIGHT)entity.setMeta("direction", entity.getMeta("direction") * -1);
+        if(from == Entity.FROM_LEFT || from == Entity.FROM_RIGHT)entity.setMeta("direction", (int) entity.getMeta("direction") * -1);
     }
 
     @Override
     public void render(SpriteBatch batch, Entity entity, float delta) {
-        boolean flip = entity.getMeta("direction") == 1;
+        boolean flip = (int) entity.getMeta("direction") == 1;
         Sprite sprite = up;
         if(flip)sprite.flip(true, false);
         batch.draw(sprite, entity.getLocation().getX()-0.125f, entity.getLocation().getY()-0.125f, entity.getWidth()+0.25f, entity.getHeight()+0.25f);

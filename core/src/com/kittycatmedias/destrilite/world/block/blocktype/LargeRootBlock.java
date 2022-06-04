@@ -20,12 +20,12 @@ public class LargeRootBlock extends BlockType {
 
     @Override
     public void onMetaChange(BlockState state) {
-        if(state.getMeta("flip") == 1)state.setFlips(true, false, 0);
+        if(state.hasMeta("flip") && (boolean)state.getMeta("flip"))state.setFlips(true, false, 0);
     }
 
     @Override
     public Sprite getSprite(BlockState state) {
-        if(state.getMeta("top") == 1)return sprite;
+        if((boolean)state.getMeta("top"))return sprite;
         return sprite2;
     }
 }

@@ -1,27 +1,94 @@
-package com.kittycatmedias.destrilite.world.generator;
+package com.kittycatmedias.destrilite.world.generator.generatortype;
 
-import com.kittycatmedias.destrilite.world.Location;
-import com.kittycatmedias.destrilite.world.World;
-import com.kittycatmedias.destrilite.world.WorldGenerator;
+import com.kittycatmedias.destrilite.world.block.WallType;
+import com.kittycatmedias.destrilite.world.generator.GeneratorCell;
+import com.kittycatmedias.destrilite.world.generator.GeneratorCellType;
+import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
-import com.kittycatmedias.destrilite.world.block.WallType;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class Grasslands extends WorldGenerator {
 
+    private GeneratorCellType STONE, LINE;
+
+    public Grasslands() {
+        super();
+        START = new GeneratorCellType() {
+            @Override
+            public BlockState[][] fill(int width, int height) {
+                BlockState[][] arr = new BlockState[width][height];
+                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.GRASS);
+                return arr;
+            }
+        };
+        END = new GeneratorCellType() {
+            @Override
+            public BlockState[][] fill(int width, int height) {
+                BlockState[][] arr = new BlockState[width][height];
+                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.GRASS);
+                return arr;
+            }
+        };
+        BORDER = new GeneratorCellType() {
+            @Override
+            public BlockState[][] fill(int width, int height) {
+                BlockState[][] arr = new BlockState[width][height];
+                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.BLACKSTONE);
+                return arr;
+            }
+        };
+        LINE = new GeneratorCellType() {
+            @Override
+            public BlockState[][] fill(int width, int height) {
+                BlockState[][] arr = new BlockState[width][height];
+                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.DIRT);
+                return arr;
+            }
+        };
+        STONE = new GeneratorCellType() {
+            @Override
+            public BlockState[][] fill(int width, int height) {
+                BlockState[][] arr = new BlockState[width][height];
+                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.STONE);
+                return arr;
+            }
+        };
+
+        final GeneratorCellType[] ST = new GeneratorCellType[]{STONE},
+                LN = new GeneratorCellType[]{LINE}, LNORST = new GeneratorCellType[]{STONE, LINE};
+
+        START.setSlots(ST,LN,ST,ST);
+        END.setSlots(LN,ST,ST,ST);
+        BORDER.setSlots(ST,ST,ST,ST);
+        LINE.setSlots(LN,LN,ST,ST);
+        STONE.setSlots(ST,ST,LNORST,LNORST);
+
+        types.add(LINE);
+        types.add(STONE);
+    }
+
     @Override
     public BlockState[][] generateBlocks(Random random) {
-        int width = 200, height = 100;
+        int cellWidth = 10, cellHeight = 10, cellColumns = 35, cellRows = 18, width = cellColumns * cellWidth, height = cellRows * cellHeight;
 
         BlockState[][] blocks = new BlockState[width][height];
 
-        ArrayList<Cave> caves = new ArrayList<>();
+        /*GeneratorCell[][] cells = generateCells(random, cellColumns, cellRows, new Point(3,4), new Point(cellColumns - 4,4));
+
+        for(int x = 0; x < cells.length; x++)for(int y = 0; y < cells[x].length; y++){
+            BlockState[][] bl = cells[x][y].getType().fill(cellWidth, cellHeight);
+            for(int x2 = 0; x2 < bl.length; x2++)for(int y2 = 0; y2 < bl[x2].length; y2++)blocks[x2+x*cellWidth][y2+y*cellHeight] = bl[x2][y2];
+        }
+
+        return blocks;*/
+        /**/ArrayList<Cave> caves = new ArrayList<>();
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
-            BlockState b = new BlockState(x,y,BlockType.STONE,WallType.STONE);
+            BlockState b = new BlockState(x,y,BlockType.STONE, WallType.STONE);
             blocks[x][y] = b;
         }
 
@@ -114,11 +181,11 @@ public class Grasslands extends WorldGenerator {
             if(inRange(x,y-1,width,height) && random.nextBoolean()){
                 boolean flip = random.nextBoolean();
                 blocks[x][y].setType(BlockType.LARGE_ROOT);
-                blocks[x][y].setMeta("top", 1);
-                blocks[x][y].setMeta("flip", flip ? 1 : 0);
+                blocks[x][y].setMeta("top", true);
+                blocks[x][y].setMeta("flip", flip);
                 blocks[x][y-1].setType(BlockType.LARGE_ROOT);
-                blocks[x][y-1].setMeta("top", 0);
-                blocks[x][y-1].setMeta("flip", flip ? 1 : 0);
+                blocks[x][y-1].setMeta("top", false);
+                blocks[x][y-1].setMeta("flip", flip);
 
             }else blocks[x][y].setType(BlockType.ROOT);
         }
@@ -140,12 +207,12 @@ public class Grasslands extends WorldGenerator {
                         type = BlockType.LOG;
                         t2.setType(type);
                         t3.setType(type);
-                        t2.setMeta("half", half ? 0 : 1);
-                        t2.setMeta("flip", half ? 0 : 1);
-                        t2.setMeta("mush", random.nextBoolean() ? 0 : 1);
-                        t3.setMeta("half", half ? 1 : 0);
-                        t3.setMeta("flip", half ? 0 : 1);
-                        t3.setMeta("mush", random.nextBoolean() ? 0 : 1);
+                        t2.setMeta("half", !half);
+                        t2.setMeta("flip", !half);
+                        t2.setMeta("mush", random.nextBoolean());
+                        t3.setMeta("half", half);
+                        t3.setMeta("flip", !half);
+                        t3.setMeta("mush", random.nextBoolean());
                     }else t2.setType(type);
                 }
             }
@@ -159,8 +226,8 @@ public class Grasslands extends WorldGenerator {
                 blocks[x][y].setType(BlockType.BLACKSTONE);
             }
         }
-
         return blocks;
+        /**/
     }
 
     private static class Cave{
