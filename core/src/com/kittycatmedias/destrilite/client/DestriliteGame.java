@@ -2,6 +2,7 @@ package com.kittycatmedias.destrilite.client;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -28,8 +29,10 @@ public class DestriliteGame extends Game {
 	private DestriliteServer server;
 	private DestriliteClient client;
 
-	final static String VERSION = "Pre-Alpha v0.0.3";
-	final static String NAME = "Destrilite";
+	public final static String VERSION = "Pre-Alpha v0.0.5";
+	public final static String NAME = "Destrilite";
+
+	public int LEFT_KEY = Input.Keys.A, RIGHT_KEY = Input.Keys.D, DOWN_KEY = Input.Keys.S, UP_KEY = Input.Keys.W, JUMP_KEY = Input.Keys.SPACE, DASH_LEFT = Input.Keys.Q, DASH_RIGHT = Input.Keys.E;
 
 
 	@Override

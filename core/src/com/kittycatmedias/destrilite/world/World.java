@@ -22,7 +22,7 @@ import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 import java.util.Random;
 
 public class World implements EventListener, PacketListener {
-    private static final float DEFAULT_GRAVITY = 8f;
+    private static final float DEFAULT_GRAVITY = 20f;
 
     private final WorldGenerator generator;
     private final BlockState[][] blocks;

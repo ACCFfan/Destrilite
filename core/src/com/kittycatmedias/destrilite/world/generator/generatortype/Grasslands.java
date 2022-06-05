@@ -1,91 +1,22 @@
 package com.kittycatmedias.destrilite.world.generator.generatortype;
 
-import com.kittycatmedias.destrilite.world.block.WallType;
-import com.kittycatmedias.destrilite.world.generator.GeneratorCell;
-import com.kittycatmedias.destrilite.world.generator.GeneratorCellType;
-import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
+import com.kittycatmedias.destrilite.world.block.WallType;
+import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class Grasslands extends WorldGenerator {
 
-    private GeneratorCellType STONE, LINE;
-
-    public Grasslands() {
-        super();
-        START = new GeneratorCellType() {
-            @Override
-            public BlockState[][] fill(int width, int height) {
-                BlockState[][] arr = new BlockState[width][height];
-                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.GRASS);
-                return arr;
-            }
-        };
-        END = new GeneratorCellType() {
-            @Override
-            public BlockState[][] fill(int width, int height) {
-                BlockState[][] arr = new BlockState[width][height];
-                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.GRASS);
-                return arr;
-            }
-        };
-        BORDER = new GeneratorCellType() {
-            @Override
-            public BlockState[][] fill(int width, int height) {
-                BlockState[][] arr = new BlockState[width][height];
-                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.BLACKSTONE);
-                return arr;
-            }
-        };
-        LINE = new GeneratorCellType() {
-            @Override
-            public BlockState[][] fill(int width, int height) {
-                BlockState[][] arr = new BlockState[width][height];
-                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.DIRT);
-                return arr;
-            }
-        };
-        STONE = new GeneratorCellType() {
-            @Override
-            public BlockState[][] fill(int width, int height) {
-                BlockState[][] arr = new BlockState[width][height];
-                for(int x = 0; x < width; x++)for(int y = 0; y < height; y++)arr[x][y]=new BlockState(x,y,BlockType.STONE);
-                return arr;
-            }
-        };
-
-        final GeneratorCellType[] ST = new GeneratorCellType[]{STONE},
-                LN = new GeneratorCellType[]{LINE}, LNORST = new GeneratorCellType[]{STONE, LINE};
-
-        START.setSlots(ST,LN,ST,ST);
-        END.setSlots(LN,ST,ST,ST);
-        BORDER.setSlots(ST,ST,ST,ST);
-        LINE.setSlots(LN,LN,ST,ST);
-        STONE.setSlots(ST,ST,LNORST,LNORST);
-
-        types.add(LINE);
-        types.add(STONE);
-    }
-
     @Override
     public BlockState[][] generateBlocks(Random random) {
-        int cellWidth = 10, cellHeight = 10, cellColumns = 35, cellRows = 18, width = cellColumns * cellWidth, height = cellRows * cellHeight;
+        int width = 200, height = 100;
 
         BlockState[][] blocks = new BlockState[width][height];
 
-        /*GeneratorCell[][] cells = generateCells(random, cellColumns, cellRows, new Point(3,4), new Point(cellColumns - 4,4));
-
-        for(int x = 0; x < cells.length; x++)for(int y = 0; y < cells[x].length; y++){
-            BlockState[][] bl = cells[x][y].getType().fill(cellWidth, cellHeight);
-            for(int x2 = 0; x2 < bl.length; x2++)for(int y2 = 0; y2 < bl[x2].length; y2++)blocks[x2+x*cellWidth][y2+y*cellHeight] = bl[x2][y2];
-        }
-
-        return blocks;*/
-        /**/ArrayList<Cave> caves = new ArrayList<>();
+        ArrayList<Cave> caves = new ArrayList<>();
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
             BlockState b = new BlockState(x,y,BlockType.STONE, WallType.STONE);
@@ -227,7 +158,6 @@ public class Grasslands extends WorldGenerator {
             }
         }
         return blocks;
-        /**/
     }
 
     private static class Cave{

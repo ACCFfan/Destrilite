@@ -3,7 +3,8 @@ package com.kittycatmedias.destrilite.entity;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
-import com.kittycatmedias.destrilite.entity.type.Worm;
+import com.kittycatmedias.destrilite.entity.type.WormEntity;
+import com.kittycatmedias.destrilite.entity.type.player.PlayerEntity;
 import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
@@ -18,7 +19,8 @@ public abstract class EntityType {
 
     private static final Array<EntityType> types = new Array<>();
 
-    public static final EntityType WORM = registerType(new Worm());
+    public static final EntityType PLAYER = registerType(new PlayerEntity());
+    public static final EntityType WORM = registerType(new WormEntity());
     private static int nextID = 0;
 
     public static EntityType registerType(EntityType type){

@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import java.awt.*;
 
 public class Location {
-    private final World world;
+    private World world;
 
     private float x, y;
     private Vector3 velocity;
@@ -14,7 +14,7 @@ public class Location {
         this.x = x;
         this.y = y;
         this.world = world;
-        this.velocity = new Vector3(0, 0, 0);
+        this.velocity = new Vector3(0, 0, 0.98f);
     }
 
     public Location(World world, float x, float y, Vector3 velocity) {
@@ -104,5 +104,9 @@ public class Location {
 
     public Point getBlockLocation(){
         return new Point((int)x, (int)y);
+    }
+
+    public void setWorld(World world) {
+        this.world = world;
     }
 }

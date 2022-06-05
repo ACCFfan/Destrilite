@@ -8,10 +8,14 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.kittycatmedias.destrilite.entity.EntityType;
+import com.kittycatmedias.destrilite.entity.type.player.Player;
+import com.kittycatmedias.destrilite.entity.type.player.Race;
 import com.kittycatmedias.destrilite.event.EventListener;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
+import com.kittycatmedias.destrilite.world.Location;
 import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockType;
@@ -21,7 +25,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
     private final OrthographicCamera camera;
     private final Matrix4 bufferViewMatrix, bufferMatrix;
 
-    private TextureAtlas tileAtlas, entityAtlas;
+    private TextureAtlas tileAtlas, entityAtlas, playerAtlas;
     private Texture bufferBlockTexture, bufferWallTexture;
     private ShaderProgram defaultShader;
     private FrameBuffer blockBuffer, wallBuffer;
@@ -29,21 +33,29 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
 
     private float offsetX,offsetY;
 
+    private final Player player;
+    private final Array<Player> players;
 
     private World world;
 
-    public GameScreen(DestriliteGame game, World world){
+    public GameScreen(DestriliteGame game, World world, Player player){
         super(game, new ExtendViewport(48,27, 48*2,27*2));
 
         camera = new OrthographicCamera();
         viewport.setCamera(camera);
 
         this.world = world;
+        players = new Array<>();
+        this.player = player;
+        players.add(player);
 
         assetManager.load("atlas/tiles.atlas", TextureAtlas.class);
         assetManager.load("atlas/entities.atlas", TextureAtlas.class);
+        assetManager.load("atlas/player.atlas", TextureAtlas.class);
 
         if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
+        player.getEntity().setLocation(new Location(this.world, 30, 30));
+        this.world.createEntity(player.getEntity());
 
         bufferViewMatrix = new Matrix4();
         bufferMatrix = new Matrix4();
@@ -60,6 +72,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         super.loadAssets();
         tileAtlas = assetManager.get("atlas/tiles.atlas");
         entityAtlas = assetManager.get("atlas/entities.atlas");
+        playerAtlas = assetManager.get("atlas/player.atlas");
 
         for(BlockType b : BlockType.getTypes())b.createSprite(tileAtlas);
         for(WallType w : WallType.getTypes())w.createSprite(tileAtlas);
@@ -84,7 +97,8 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         }
 
         if(world != null) {
-            world.update(Math.min(0.25f, delta));
+            world.update(Math.min(0.15f, delta));
+            for(Player player : players)player.update(Math.min(0.15f, delta));
 
             if(camera.position.x - camera.viewportWidth / 2 < 0)camera.position.x = 0 + camera.viewportWidth / 2;
             else if(camera.position.x + camera.viewportWidth / 2 > world.getWidth())camera.position.x = world.getWidth() - camera.viewportWidth / 2;
@@ -140,6 +154,8 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
             batch.draw(bufferBlockTexture, 0, 0, bufferBlockTexture.getWidth() / 8.0f, bufferBlockTexture.getHeight() / 8.0f);
             world.render(batch, delta);
 
+            for(Player p : players)p.render(batch, delta);
+
             batch.end();
             batch.setShader(defaultShader);
         }
@@ -172,5 +188,9 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         offsetY = 1f/blockBuffer.getHeight();
 
         bufferMatrix.setToOrtho(0, blockBuffer.getWidth(), blockBuffer.getHeight(),0,0,1);
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

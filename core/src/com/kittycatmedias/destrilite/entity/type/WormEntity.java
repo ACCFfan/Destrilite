@@ -8,10 +8,10 @@ import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.entity.EntityType;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
-public class Worm extends EntityType {
+public class WormEntity extends EntityType {
     private Sprite up, down;
 
-    public Worm() {
+    public WormEntity() {
         super("worm", 1, false, true, 0.625f, 0.25f, true, false);
     }
 
@@ -25,7 +25,7 @@ public class Worm extends EntityType {
     public void update(Entity entity, float delta) {
         super.update(entity, delta);
 
-        if(!DestriliteGame.getInstance().isClient())entity.getLocation().getVelocity().x = (int) entity.getMeta("direction");
+        if(!DestriliteGame.getInstance().isClient())entity.getLocation().getVelocity().x = (int) entity.getMeta("direction") * (float) entity.getMeta("speed");
     }
 
     @Override
@@ -37,7 +37,7 @@ public class Worm extends EntityType {
     @Override
     public void render(SpriteBatch batch, Entity entity, float delta) {
         boolean flip = (int) entity.getMeta("direction") == 1;
-        Sprite sprite = up;
+        Sprite sprite = entity.getTotalFrames() % 2 <= 1 ? up : down;
         if(flip)sprite.flip(true, false);
         batch.draw(sprite, entity.getLocation().getX()-0.125f, entity.getLocation().getY()-0.125f, entity.getWidth()+0.25f, entity.getHeight()+0.25f);
         if(flip)sprite.flip(true, false);

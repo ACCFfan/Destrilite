@@ -2,12 +2,16 @@ package com.kittycatmedias.destrilite.client;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.kittycatmedias.destrilite.entity.type.player.Player;
+import com.kittycatmedias.destrilite.entity.type.player.Race;
 import com.kittycatmedias.destrilite.event.EventListener;
 import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
@@ -19,8 +23,15 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
 
     private VerticalGroup mainGroup, spGroup, mpGroup, optionsGroup;
 
+    private Race race;
+
+    private TextureAtlas playerAtlas;
+
     public MainMenuScreen(DestriliteGame game){
         super(game, new ScalingViewport(Scaling.fit, 192*2, 108*2));
+        race = Race.HUMAN;
+
+        assetManager.load("atlas/player.atlas", TextureAtlas.class);
     }
 
     @Override
@@ -47,6 +58,9 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
     @Override
     public void loadAssets() {
         super.loadAssets();
+        playerAtlas = assetManager.get("atlas/player.atlas");
+        for(Race r : Race.getRaces())r.generateSprites(playerAtlas);
+
         loadMenu();
     }
 
@@ -110,7 +124,12 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         Table setRaceTable = new Table();
         Button setRaceButton = new TextButton("Change Race", textButtonStyle);
         setRaceButton.pad(buttonPad);
-        setRaceTable.add(setRaceButton).width(100);
+        setRaceTable.add(setRaceButton);
+
+        Image raceImage = new Image(race.getHeadSprite());
+        raceImage.setScaling(Scaling.fillX);
+        setRaceTable.add(raceImage).width(19).expand().fill();
+        setRaceTable.pack();
 
         Table startSPTable = new Table();
         Button startSPButton = new TextButton("Start", textButtonStyle);
@@ -151,8 +170,6 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         Button startServerButton = new TextButton("Start Server", textButtonStyle);
         startServerButton.pad(buttonPad);
         startServerTable.add(startServerButton).width(100);
-
-
 
 
 
@@ -226,13 +243,15 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         setRaceButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
+                race = Race.getRace((race.getID()+1)%Race.getRaces().size);
+                raceImage.setDrawable(new TextureRegionDrawable(race.getHeadSprite()));
             }
         });
         startSPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.changeScreen(new GameScreen(game, null));
+                Player player = new Player(race, -1);
+                game.changeScreen(new GameScreen(game, null, player));
             }
         });
         spBackButton.addListener(new ClickListener(){
@@ -274,7 +293,8 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         startMPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.changeScreen(new GameScreen(game, null));
+                Player player = new Player(race, -1);
+                game.changeScreen(new GameScreen(game, null, player));
             }
         });
         connectMPButton.addListener(new ClickListener(){
@@ -355,7 +375,7 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
     }
 
     @PacketHandler
-    public void onWorldBlockInfo(WorldCreatePacket packet){
-        if(game.isClient())game.changeScreen(new GameScreen(game, WorldCreatePacket.decode(packet)));
+    public void onWorldCreate(WorldCreatePacket packet){
+        //if(game.isClient())game.changeScreen(new GameScreen(game, WorldCreatePacket.decode(packet)));
     }
 }

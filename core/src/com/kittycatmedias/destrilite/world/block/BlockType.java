@@ -79,8 +79,9 @@ public class BlockType {
     public void onCollide(BlockState state, Entity entity, int from){
         Location location = entity.getLocation();
 
-        if((from == Entity.FROM_LEFT || from == Entity.FROM_RIGHT) && entity.walksUp() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight()))
-            entity.setLocation(location.getX(), state.getY()+1);
+        if(((from == Entity.FROM_LEFT && location.getVelocity().x > 0) || (from == Entity.FROM_RIGHT && location.getVelocity().x < 0)) && location.getY() >= state.getY() && entity.walksUp() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight()))
+            //entity.setLocation(location.getX(), state.getY()+1);
+            location.getVelocity().y = 2;
         else if(from == Entity.FROM_LEFT){
             entity.setLocation(state.getX() - entity.getWidth(), location.getY());
             location.getVelocity().x = 0;
@@ -89,10 +90,10 @@ public class BlockType {
             location.getVelocity().x = 0;
         } else if(from == Entity.FROM_BOTTOM){
             entity.setLocation(location.getX(), state.getY()-entity.getHeight());
-            location.getVelocity().y = 0;
+            if(location.getVelocity().y > 0)location.getVelocity().y = 0;
         } else {
             entity.setLocation(location.getX(), state.getY()+1);
-            location.getVelocity().y = 0;
+            if(location.getVelocity().y < 0)location.getVelocity().y = 0;
         }
     }
 

@@ -33,6 +33,7 @@ public class LogBlock extends BlockType {
         if(!DestriliteGame.getInstance().isClient()){
             ObjectMap<String, Object> meta = new ObjectMap<>();
             meta.put("direction", state.getWorld().getRandom().nextBoolean() ? -1 : 1);
+            meta.put("speed", state.getWorld().getRandom().nextFloat() / 2 + 0.25f);
             state.getWorld().createEntity(new Entity(new Location(state.getWorld(), state.getX(), state.getY()), EntityType.WORM, meta));
         }
     }

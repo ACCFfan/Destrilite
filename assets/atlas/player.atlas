@@ -1,0 +1,90 @@
+
+player.png
+size: 64, 16
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+race/human/body
+  rotate: false
+  xy: 22, 9
+  size: 7, 6
+  orig: 7, 6
+  offset: 0, 0
+  index: -1
+race/human/head
+  rotate: false
+  xy: 1, 6
+  size: 9, 9
+  orig: 9, 9
+  offset: 0, 0
+  index: -1
+race/human/left_foot
+  rotate: false
+  xy: 6, 1
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/human/left_hand
+  rotate: false
+  xy: 39, 12
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/human/right_foot
+  rotate: false
+  xy: 11, 1
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/human/right_hand
+  rotate: false
+  xy: 44, 12
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/toy/body
+  rotate: false
+  xy: 31, 10
+  size: 6, 5
+  orig: 6, 5
+  offset: 0, 0
+  index: -1
+race/toy/head
+  rotate: false
+  xy: 12, 6
+  size: 8, 9
+  orig: 8, 9
+  offset: 0, 0
+  index: -1
+race/toy/left_foot
+  rotate: false
+  xy: 49, 12
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/toy/left_hand
+  rotate: false
+  xy: 16, 1
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/toy/right_foot
+  rotate: false
+  xy: 1, 1
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1
+race/toy/right_hand
+  rotate: false
+  xy: 21, 1
+  size: 3, 3
+  orig: 3, 3
+  offset: 0, 0
+  index: -1

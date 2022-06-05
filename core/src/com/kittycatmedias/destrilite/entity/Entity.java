@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.world.Location;
+import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
 public class Entity {
@@ -24,7 +25,7 @@ public class Entity {
 
     private boolean dirtyPosition,dirty, tcpPosition,tcp, hasCollision, hasGravity, walksUp;
     private int health;
-    private float width, height;
+    private float width, height, totalFrames;
 
     public static final int FROM_LEFT = 0, FROM_RIGHT = 1, FROM_TOP = 2, FROM_BOTTOM = 3;
 
@@ -86,9 +87,13 @@ public class Entity {
                 BlockState state = blocks[x][y];
                 if(state.isCollidable() && state.getBounds().overlaps(bounds)){
                     Vector3 velocity = location.getVelocity();
+
                     final float stateX = state.getX(), stateY = state.getY(), entityX = location.getX(), entityY = location.getY();
                     //CHECK WHAT'S ABOVE / TO THE SIDE
-                    final boolean bottom = state.getY() > entityY, top = state.getY() < entityY, left = state.getX() > entityX, right = state.getX() < entityX;
+                    final boolean bottom = state.getY() > entityY && y > 0 && !blocks[x][y-1].isCollidable(),
+                            top = state.getY() < entityY && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
+                            left = state.getX() > entityX && x > 0 && !blocks[x-1][y].isCollidable(),
+                            right = state.getX() < entityX && x < blocks.length-1 && !blocks[x+1][y].isCollidable();
                     //GET THE POSITION INSIDE
                     final float inX = left ? (entityX + width) - stateX : (stateX + 1) - entityX, inY = bottom ? (entityY + height) - stateY : (stateY + 1) - entityY;
                     final int from;
@@ -96,6 +101,7 @@ public class Entity {
                     else if(top && ((!left && !right) || inY < inX))from = FROM_TOP;
                     else if(left && ((!bottom && !top) || inX < inY))from = FROM_LEFT;
                     else from = FROM_RIGHT;
+
 
 
                     state.collides(this, from);
@@ -108,9 +114,9 @@ public class Entity {
         if(velocity.x != 0 || velocity.y != 0) {
             final float min = 0.05f;
             final float pow = (float) Math.pow((1 - velocity.z), delta);
-            velocity.set(velocity.x * pow, velocity.y * pow, velocity.z);
+            velocity.set(velocity.x * pow, hasGravity ? velocity.y : velocity.y * pow, velocity.z);
             if (velocity.x < min && velocity.x > -min) velocity.set(0, velocity.y, velocity.z);
-            if (velocity.y < min && velocity.y > -min) velocity.set(velocity.x, 0, velocity.z);
+            if (!hasGravity && velocity.y < min && velocity.y > -min) velocity.set(velocity.x, 0, velocity.z);
         }
 
         type.update(this, delta);
@@ -128,6 +134,7 @@ public class Entity {
     }
 
     public void render(SpriteBatch batch, float delta) {
+        totalFrames += delta;
         type.render(batch, this, delta);
     }
 
@@ -138,6 +145,7 @@ public class Entity {
     public void setLocation(Location location){
         this.location.setX(location.getX());
         this.location.setY(location.getY());
+        this.location.setWorld(location.getWorld());
         bounds.x = location.getX();
         bounds.y = location.getY();
         this.location.setVelocity(location.getVelocity());
@@ -260,4 +268,21 @@ public class Entity {
         else return FROM_TOP;
     }
 
+    public float getTotalFrames() {
+        return totalFrames;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+        bounds.width = width;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+        bounds.height = height;
+    }
+
+    public void setWalksUp(boolean walksUp) {
+        this.walksUp = walksUp;
+    }
 }
