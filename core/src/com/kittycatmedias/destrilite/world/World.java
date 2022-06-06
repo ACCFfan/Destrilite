@@ -18,6 +18,7 @@ import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
 import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
+import com.kittycatmedias.destrilite.world.particle.Particle;
 
 import java.util.Random;
 
@@ -33,6 +34,7 @@ public class World implements EventListener, PacketListener {
     private final Random random;
 
     private Array<Entity> entities;
+    private Array<Particle> particles;
 
     private float gravity;
 
@@ -41,6 +43,8 @@ public class World implements EventListener, PacketListener {
     private static int nextID = 0;
 
     public static final Array<World> worlds = new Array<>();
+
+    private static World currentWorld;
 
     public World(WorldGenerator generator, long seed){
 
@@ -58,6 +62,7 @@ public class World implements EventListener, PacketListener {
         id = nextID++;
         worlds.add(this);
         entities = new Array<>();
+        particles = new Array<>();
 
         DestriliteGame.getInstance().getEventManager().addListener(this);
         DestriliteGame.getInstance().getPacketManager().addListener(this);
@@ -104,6 +109,14 @@ public class World implements EventListener, PacketListener {
         if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(EntityCreatePacket.create(entity), true);
     }
 
+    public void spawnParticle(Particle particle, boolean push){
+        //TODO events, you know the deal
+
+
+        particles.add(particle);
+        //if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(EntityCreatePacket.create(entity), true);
+    }
+
     public BlockState setBlock(int x, int y, BlockType type){
         //TODO events for both of these
 
@@ -121,6 +134,14 @@ public class World implements EventListener, PacketListener {
     public void update(float delta){
         for(BlockState[] bStates : blocks)for(BlockState block : bStates)block.update(delta);
         for(Entity entity : entities)entity.update(delta);
+        int remove = 0;
+        for(int i = 0; i - remove < particles.size; i++){
+            Particle particle = particles.get(i - remove);
+            if(particle.shouldDispose()){
+                particles.removeIndex(i - remove);
+                remove++;
+            }else particle.update(delta);
+        }
     }
 
     public void setBounds(OrthographicCamera camera){
@@ -152,7 +173,14 @@ public class World implements EventListener, PacketListener {
     }
 
     public void render(SpriteBatch batch, float delta){
-        for(Entity entity : entities)entity.render(batch, delta);
+        for(Entity entity : entities)
+            if(entity.getLocation().getX() + entity.getWidth() >= viewBounds.x && entity.getLocation().getX() <= viewBounds.x + viewBounds.width
+            && entity.getLocation().getY() + entity.getHeight() >= viewBounds.y && entity.getLocation().getY() <= viewBounds.y + viewBounds.height)
+                entity.render(batch, delta);
+        for(Particle particle : particles)
+            if(particle.getLocation().getX() + particle.getWidth() >= viewBounds.x && particle.getLocation().getX() <= viewBounds.x + viewBounds.width
+                    && particle.getLocation().getY() + particle.getHeight() >= viewBounds.y && particle.getLocation().getY() <= viewBounds.y + viewBounds.height)
+                particle.render(batch, delta);
     }
 
     public BlockState[][] getBlocks() {
@@ -188,6 +216,15 @@ public class World implements EventListener, PacketListener {
         worlds.removeValue(this, true);
         DestriliteGame.getInstance().getEventManager().removeListener(this);
         DestriliteGame.getInstance().getPacketManager().removeListener(this);
+        if(currentWorld == this)currentWorld = null;
+    }
+
+    public static void setCurrentWorld(World world){
+        currentWorld = world;
+    }
+
+    public static World getCurrentWorld() {
+        return currentWorld;
     }
 
     public int getID() {

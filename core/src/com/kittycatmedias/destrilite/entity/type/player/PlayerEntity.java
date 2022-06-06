@@ -10,7 +10,7 @@ import com.kittycatmedias.destrilite.world.Location;
 public class PlayerEntity extends EntityType {
 
     public PlayerEntity() {
-        super("player", 1, false, true, 1, 1, true, true);
+        super("player", 1, false, true, 1, 1, true, false);
     }
 
     @Override

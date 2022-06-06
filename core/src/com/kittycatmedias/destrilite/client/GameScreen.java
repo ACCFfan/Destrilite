@@ -20,12 +20,13 @@ import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
+import com.kittycatmedias.destrilite.world.particle.ParticleType;
 
 public class GameScreen extends DestriliteScreen implements EventListener, PacketListener {
     private final OrthographicCamera camera;
     private final Matrix4 bufferViewMatrix, bufferMatrix;
 
-    private TextureAtlas tileAtlas, entityAtlas, playerAtlas;
+    private TextureAtlas tileAtlas, entityAtlas, playerAtlas, particleAtlas;
     private Texture bufferBlockTexture, bufferWallTexture;
     private ShaderProgram defaultShader;
     private FrameBuffer blockBuffer, wallBuffer;
@@ -39,7 +40,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
     private World world;
 
     public GameScreen(DestriliteGame game, World world, Player player){
-        super(game, new ExtendViewport(48,27, 48*2,27*2));
+        super(game, new ExtendViewport(48*0.6f,27*0.6f, 48*2*0.6f,27*2*0.6f));
 
         camera = new OrthographicCamera();
         viewport.setCamera(camera);
@@ -52,9 +53,13 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         assetManager.load("atlas/tiles.atlas", TextureAtlas.class);
         assetManager.load("atlas/entities.atlas", TextureAtlas.class);
         assetManager.load("atlas/player.atlas", TextureAtlas.class);
+        assetManager.load("atlas/particle.atlas", TextureAtlas.class);
 
         if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
-        player.getEntity().setLocation(new Location(this.world, 30, 30));
+
+        World.setCurrentWorld(this.world);
+
+        player.getEntity().setLocation(new Location(this.world, 30, 50));
         this.world.createEntity(player.getEntity());
 
         bufferViewMatrix = new Matrix4();
@@ -73,10 +78,12 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         tileAtlas = assetManager.get("atlas/tiles.atlas");
         entityAtlas = assetManager.get("atlas/entities.atlas");
         playerAtlas = assetManager.get("atlas/player.atlas");
+        particleAtlas = assetManager.get("atlas/particle.atlas");
 
         for(BlockType b : BlockType.getTypes())b.createSprite(tileAtlas);
         for(WallType w : WallType.getTypes())w.createSprite(tileAtlas);
         for(EntityType e : EntityType.getTypes())e.createSprite(entityAtlas);
+        for(ParticleType p : ParticleType.getTypes())p.createSprite(particleAtlas);
 
         blockBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, this.world.getWidth() * 8, this.world.getHeight() * 8, false);
         wallBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, this.world.getWidth() * 8, this.world.getHeight() * 8, false);

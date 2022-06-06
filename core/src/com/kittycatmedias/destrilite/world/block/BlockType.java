@@ -79,7 +79,7 @@ public class BlockType {
     public void onCollide(BlockState state, Entity entity, int from){
         Location location = entity.getLocation();
 
-        if(((from == Entity.FROM_LEFT && location.getVelocity().x > 0) || (from == Entity.FROM_RIGHT && location.getVelocity().x < 0)) && location.getY() >= state.getY() && entity.walksUp() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight()))
+        if(entity.walksUp() && ((from == Entity.FROM_LEFT && location.getVelocity().x > 0) || (from == Entity.FROM_RIGHT && location.getVelocity().x < 0)) && location.getY() >= state.getY() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight()))
             //entity.setLocation(location.getX(), state.getY()+1);
             location.getVelocity().y = 2;
         else if(from == Entity.FROM_LEFT){

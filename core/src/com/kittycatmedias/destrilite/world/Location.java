@@ -14,7 +14,7 @@ public class Location {
         this.x = x;
         this.y = y;
         this.world = world;
-        this.velocity = new Vector3(0, 0, 0.98f);
+        this.velocity = new Vector3(0, 0, 0.99f);
     }
 
     public Location(World world, float x, float y, Vector3 velocity) {
