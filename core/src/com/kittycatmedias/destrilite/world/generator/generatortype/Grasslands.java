@@ -12,7 +12,7 @@ public class Grasslands extends WorldGenerator {
 
     @Override
     public BlockState[][] generateBlocks(Random random) {
-        int width = 200, height = 100;
+        int width = 400, height = 100;
 
         BlockState[][] blocks = new BlockState[width][height];
 

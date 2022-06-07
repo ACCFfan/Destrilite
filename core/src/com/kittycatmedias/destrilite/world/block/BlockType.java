@@ -92,6 +92,7 @@ public class BlockType {
             entity.setLocation(location.getX(), state.getY()-entity.getHeight());
             if(location.getVelocity().y > 0)location.getVelocity().y = 0;
         } else {
+            entity.setGrounded(true);
             entity.setLocation(location.getX(), state.getY()+1);
             if(location.getVelocity().y < 0)location.getVelocity().y = 0;
         }

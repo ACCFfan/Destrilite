@@ -97,12 +97,6 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
     @Override
     public void render(float delta) {
         super.render(delta);
-        if(Gdx.input.isTouched()){
-            Vector3 pos = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-            camera.position.x -= (camera.position.x - pos.x) * delta * 2.0f;
-            camera.position.y -= (camera.position.y - pos.y) * delta * 2.0f;
-        }
-
         if(world != null) {
             world.update(Math.min(0.15f, delta));
             for(Player player : players)player.update(Math.min(0.15f, delta));
@@ -111,6 +105,8 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
             else if(camera.position.x + camera.viewportWidth / 2 > world.getWidth())camera.position.x = world.getWidth() - camera.viewportWidth / 2;
             if(camera.position.y - camera.viewportHeight / 2 < 0)camera.position.y = 0 + camera.viewportHeight / 2;
             else if(camera.position.y + camera.viewportHeight / 2 > world.getHeight())camera.position.y = world.getHeight() - camera.viewportHeight / 2;
+
+            viewport.getCamera().update();
 
             world.setBounds(camera);
 

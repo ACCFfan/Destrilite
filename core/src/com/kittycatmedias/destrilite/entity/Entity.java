@@ -16,14 +16,14 @@ public class Entity {
     private static int nextID;
     private static final Array<Entity> entities = new Array<>();
 
-    private final Location location;
+    private final Location location, startLocation;
     private final EntityType type;
     private final ObjectMap<String, Object> meta;
     private final Rectangle bounds;
 
     private final int id;
 
-    private boolean dirtyPosition,dirty, tcpPosition,tcp, hasCollision, hasGravity, walksUp;
+    private boolean dirtyPosition,dirty, tcpPosition,tcp, hasCollision, hasGravity, walksUp, grounded;
     private int health;
     private float width, height, totalFrames;
 
@@ -31,6 +31,7 @@ public class Entity {
 
     public Entity(Location location, EntityType type, ObjectMap<String, Object> meta){
         this.location = location;
+        startLocation = location.copy();
         this.type = type;
         this.walksUp = getType().walksUp();
         hasGravity = type.hasGravity();
@@ -39,6 +40,7 @@ public class Entity {
         bounds = new Rectangle(location.getX(), location.getY(), width, height);
         id = nextID++;
         hasCollision = type.isCollidable();
+        grounded = false;
         health = type.getMaxHealth();
         if(meta == null)this.meta = new ObjectMap<>();
         else this.meta = meta;
@@ -52,6 +54,7 @@ public class Entity {
     //ONLY FOR USE FROM PACKETS
     public Entity(Location location, EntityType type, ObjectMap<String, Object> meta, int id){
         this.location = location;
+        startLocation = location.copy();
         this.type = type;
         this.walksUp = getType().walksUp();
         hasGravity = type.hasGravity();
@@ -61,6 +64,7 @@ public class Entity {
         this.id = id;
         nextID = id+1;
         hasCollision = type.isCollidable();
+        grounded = false;
         health = type.getMaxHealth();
         if(meta == null)this.meta = new ObjectMap<>();
         else this.meta = meta;
@@ -78,6 +82,8 @@ public class Entity {
         }
 
         if(hasCollision){
+            if(location.getVelocity().y != 0)grounded = false;
+            if(location.getX()+width < 0 || location.getY()+height < 0 || location.getX() > location.getWorld().getWidth() || location.getY() > location.getWorld().getHeight())reset();
             if(hasGravity)location.getVelocity().y -= delta * location.getWorld().getGravity();
             int sX = Math.max(0, (int) location.getX()), sY = Math.max(0, (int) location.getY()),
                     eX = (int) Math.min(location.getWorld().getWidth(), location.getX()+width+1),
@@ -149,6 +155,11 @@ public class Entity {
         bounds.x = location.getX();
         bounds.y = location.getY();
         this.location.setVelocity(location.getVelocity());
+
+        this.startLocation.setX(location.getX());
+        this.startLocation.setY(location.getY());
+        this.startLocation.setWorld(location.getWorld());
+        this.startLocation.setVelocity(location.getVelocity());
         markDirtyPosition(true);
 
 
@@ -282,7 +293,19 @@ public class Entity {
         bounds.height = height;
     }
 
+    public void setGrounded(boolean grounded){
+        this.grounded = grounded;
+    }
+
+    public boolean isGrounded() {
+        return grounded;
+    }
+
     public void setWalksUp(boolean walksUp) {
         this.walksUp = walksUp;
+    }
+
+    public void reset(){
+        setLocation(startLocation);
     }
 }

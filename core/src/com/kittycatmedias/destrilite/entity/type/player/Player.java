@@ -3,6 +3,9 @@ package com.kittycatmedias.destrilite.entity.type.player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -20,8 +23,9 @@ import com.kittycatmedias.destrilite.world.particle.ParticleType;
 
 public class Player {
 
-    private float health, dex, str, mag, mana, def, scale, deg, pixel, maxSpeed, jumpHeight, dashSpeed;
-    private int id;
+    private float health, dex, str, mag, mana, def, scale, deg, pixel, maxSpeed, jumpHeight, dashSpeed, dashTimer, lastDash;
+    private final int ID;
+    private int jumps, maxJumps;
 
     private boolean flip;
 
@@ -42,9 +46,13 @@ public class Player {
 
     public Player(Race race, int id){
         this.race = race;
-        if(id == -1) this.id = nextID++;
-        else this.id = id;
+        if(id == -1) this.ID = nextID++;
+        else this.ID = id;
+        jumps = 0;
+        maxJumps = 1;
         scale = 1f;
+        dashTimer = 0.5f;
+        lastDash = 0;
         pixel = 0.125f * scale;
         this.health = race.getHealth();
         this.dex = race.getDex();
@@ -68,7 +76,7 @@ public class Player {
     }
 
     public int getID() {
-        return id;
+        return ID;
     }
 
     public float getStr() {
@@ -114,43 +122,66 @@ public class Player {
         if(sc instanceof GameScreen) {
             GameScreen screen = (GameScreen) sc;
             if (screen.getPlayer() == this) {
+                Camera camera = screen.getViewport().getCamera();
+                Vector3 pos = camera.position;
+                pos.x+=(entity.getLocation().getX()-pos.x)*delta*3;
+                pos.y+=(entity.getLocation().getY()-pos.y)*delta*3;
+
+                if(Gdx.input.isButtonPressed(DestriliteGame.getInstance().ZOOM)){
+                    Vector3 pos2 = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+                    pos.x -= (pos.x - pos2.x) * delta * 2.0f;
+                    pos.y -= (pos.y - pos2.y) * delta * 2.0f;
+                }
+
+                camera.update();
+
+                if(entity.isGrounded())jumps = 0;
+
                 Vector3 v = entity.getLocation().getVelocity();
                 if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().LEFT_KEY))v.x = v.x < -maxSpeed ? v.x : Math.max(v.x-maxSpeed*delta*7, -maxSpeed);
                 if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().RIGHT_KEY))v.x = v.x > maxSpeed ? v.x : Math.min(v.x+maxSpeed*delta*7, maxSpeed);
 
-                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().JUMP_KEY)){
+                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().JUMP_KEY) && (entity.isGrounded() || jumps < maxJumps)){
                     v.y= Math.min(v.y+jumpHeight, jumpHeight);
-                    for(int i = 0; i < 6; i++) {
-                        Location l = new Location(entity.getLocation().getWorld(), entity.getLocation().getX()+ entity.getWidth()/2, entity.getLocation().getY());
-                        Vector3 vel = l.getVelocity();
-                        vel.x = -v.x/3 + l.getWorld().getRandom().nextFloat()*4 - 2f;
-                        vel.y = -v.y/3 + l.getWorld().getRandom().nextFloat()*4 - 2f;
-                        entity.getLocation().getWorld().spawnParticle(new Particle(ParticleType.PUFF, l), true);
+                    if(!entity.isGrounded()) {
+                        jumps++;
+                        for (int i = 0; i < 6; i++) {
+                            Location l = new Location(entity.getLocation().getWorld(), entity.getLocation().getX() + entity.getWidth() / 2, entity.getLocation().getY());
+                            Vector3 vel = l.getVelocity();
+                            vel.x = -v.x / 3 + l.getWorld().getRandom().nextFloat() * 4 - 2f;
+                            vel.y = -v.y / 3 + l.getWorld().getRandom().nextFloat() * 4 - 2f;
+                            Particle particle = new Particle(ParticleType.PUFF, l);
+                            entity.getLocation().getWorld().spawnParticle(particle, true);
+                        }
                     }
                 }
 
-                if(v.y >= 0 && (Gdx.input.isKeyPressed(DestriliteGame.getInstance().JUMP_KEY) || Gdx.input.isKeyPressed(DestriliteGame.getInstance().UP_KEY)))v.y= Math.min(v.y+jumpHeight*delta*1.5f, jumpHeight);
+                if(v.y > 0 && (Gdx.input.isKeyPressed(DestriliteGame.getInstance().JUMP_KEY) || Gdx.input.isKeyPressed(DestriliteGame.getInstance().UP_KEY)))v.y= Math.min(v.y+jumpHeight*delta*1.5f, jumpHeight);
                 if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().DOWN_KEY))v.y-= jumpHeight*delta*1.75f;
 
 
-                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_LEFT)){
+                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_LEFT) && entity.getTotalFrames()-lastDash>=dashTimer){
+                    lastDash = entity.getTotalFrames();
                     v.x = v.x < -dashSpeed ? v.x : Math.max(v.x-dashSpeed, -dashSpeed);
                     for(int i = 0; i < 6; i++) {
                         Location l = new Location(entity.getLocation().getWorld(), entity.getLocation().getX()+ entity.getWidth()/2, entity.getLocation().getY());
                         Vector3 vel = l.getVelocity();
                         vel.x = -v.x/3 + l.getWorld().getRandom().nextFloat()*4 - 2f;
                         vel.y = -v.y/3 + l.getWorld().getRandom().nextFloat()*4 - 2f;
-                        entity.getLocation().getWorld().spawnParticle(new Particle(ParticleType.PUFF, l), true);
+                        Particle particle = new Particle(ParticleType.PUFF, l);
+                        entity.getLocation().getWorld().spawnParticle(particle, true);
                     }
                 }
-                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_RIGHT)){
+                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_RIGHT) && entity.getTotalFrames()-lastDash>=dashTimer){
+                    lastDash = entity.getTotalFrames();
                     v.x = v.x > dashSpeed ? v.x : Math.min(v.x+dashSpeed, dashSpeed);
                     for(int i = 0; i < 6; i++) {
                         Location l = new Location(entity.getLocation().getWorld(), entity.getLocation().getX()+ entity.getWidth()/2, entity.getLocation().getY());
                         Vector3 vel = l.getVelocity();
                         vel.x = -v.x/3 + l.getWorld().getRandom().nextFloat()*4 - 2f;
                         vel.y = -v.y/3 + l.getWorld().getRandom().nextFloat()*4 - 2f;
-                        entity.getLocation().getWorld().spawnParticle(new Particle(ParticleType.PUFF, l), true);
+                        Particle particle = new Particle(ParticleType.PUFF, l);
+                        entity.getLocation().getWorld().spawnParticle(particle, true);
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.kittycatmedias.destrilite.world.particle;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -58,6 +59,7 @@ public abstract class ParticleType {
 
     public void render(SpriteBatch batch, Particle particle, float delta) {
         Sprite sprite = getSprite(particle, delta);
+        if(particle.getColor() != null)batch.setColor(particle.getColor());
         sprite.flip(particle.isFlippedX(), particle.isFlippedY());
         int rotation = particle.getRotation();
         if(rotation != 0){
@@ -67,6 +69,7 @@ public abstract class ParticleType {
         batch.draw(sprite, particle.getLocation().getX()-particle.getWidth()/2, particle.getLocation().getY()-particle.getHeight()/2, particle.getScale() * width, particle.getScale() * height);
         if(rotation != 0)sprite.rotate((4-rotation) * 90);
         sprite.flip(particle.isFlippedX(), particle.isFlippedY());
+        if(particle.getColor() != null)batch.setColor(Color.WHITE);
     }
 
     public void onCreate(Particle particle){
