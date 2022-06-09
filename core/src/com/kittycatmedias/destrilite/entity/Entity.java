@@ -27,7 +27,7 @@ public class Entity {
     private int health;
     private float width, height, totalFrames;
 
-    public static final int FROM_LEFT = 0, FROM_RIGHT = 1, FROM_TOP = 2, FROM_BOTTOM = 3;
+    public static final int NOTHING = -1, FROM_LEFT = 0, FROM_RIGHT = 1, FROM_TOP = 2, FROM_BOTTOM = 3;
 
     public Entity(Location location, EntityType type, ObjectMap<String, Object> meta){
         this.location = location;
@@ -92,26 +92,29 @@ public class Entity {
             for(int x = sX; x < eX; x++)for(int y = sY; y < eY; y++){
                 BlockState state = blocks[x][y];
                 if(state.isCollidable() && state.getBounds().overlaps(bounds)){
-                    Vector3 velocity = location.getVelocity();
+                    //Vector3 velocity = location.getVelocity();
 
                     final float stateX = state.getX(), stateY = state.getY(), entityX = location.getX(), entityY = location.getY();
                     //CHECK WHAT'S ABOVE / TO THE SIDE
-                    final boolean bottom = state.getY() > entityY && y > 0 && !blocks[x][y-1].isCollidable(),
-                            top = state.getY() < entityY && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
-                            left = state.getX() > entityX && x > 0 && !blocks[x-1][y].isCollidable(),
-                            right = state.getX() < entityX && x < blocks.length-1 && !blocks[x+1][y].isCollidable();
+                    final boolean bottom = state.getY()+0.5f > entityY+height/2f && y > 0 && !blocks[x][y-1].isCollidable(),
+                            top = state.getY()+0.5f <= entityY+height/2f && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
+                            left = state.getX()+0.5f > entityX+width/2f && x > 0 && !blocks[x-1][y].isCollidable(),
+                            right = state.getX()+0.5f <= entityX+width/2f && x < blocks.length-1 && !blocks[x+1][y].isCollidable();
                     //GET THE POSITION INSIDE
-                    final float inX = left ? (entityX + width) - stateX : (stateX + 1) - entityX, inY = bottom ? (entityY + height) - stateY : (stateY + 1) - entityY;
+                    final float inX = right ? (entityX + width) - stateX : (stateX + 1) - entityX, inY = bottom ? (entityY + height) - stateY : (stateY + 1) - entityY;
+
                     final int from;
                     if(bottom && ((!left && !right) || inY < inX)) from = FROM_BOTTOM;
                     else if(top && ((!left && !right) || inY < inX))from = FROM_TOP;
                     else if(left && ((!bottom && !top) || inX < inY))from = FROM_LEFT;
-                    else from = FROM_RIGHT;
+                    else if (right && ((!bottom && !top) || inX < inY))from = FROM_RIGHT;
+                    else from = NOTHING;
 
 
-
-                    state.collides(this, from);
-                    collides(state, invertFrom(from));
+                    if(from != NOTHING) {
+                        state.collides(this, from);
+                        collides(state, invertFrom(from));
+                    }
                 }
             }
         }

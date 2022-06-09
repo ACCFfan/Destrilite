@@ -81,7 +81,8 @@ public class BlockType {
 
         if(entity.walksUp() && ((from == Entity.FROM_LEFT && location.getVelocity().x > 0) || (from == Entity.FROM_RIGHT && location.getVelocity().x < 0)) && location.getY() >= state.getY() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight()))
             //entity.setLocation(location.getX(), state.getY()+1);
-            location.getVelocity().y = 2;
+            //location.getVelocity().y = Math.max(location.getVelocity().y, 0.1f);
+            ;
         else if(from == Entity.FROM_LEFT){
             entity.setLocation(state.getX() - entity.getWidth(), location.getY());
             location.getVelocity().x = 0;

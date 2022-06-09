@@ -12,7 +12,7 @@ public abstract class Race {
 
     protected final String name;
 
-    protected final float headWidth, headHeight, bodyWidth, bodyHeight, health, dex, str, mag, mana, def;
+    protected final float headWidth, headHeight, bodyWidth, bodyHeight, health, dex, str, mag, mana, def, footOffset, handOffsetX, handOffsetY;
     protected final int id;
 
     protected Sprite headSprite, bodySprite, leftHandSprite, rightHandSprite, leftFootSprite, rightFootSprite;
@@ -29,12 +29,15 @@ public abstract class Race {
         return race;
     }
 
-    public Race(String name, float headWidth, float headHeight, float bodyWidth, float bodyHeight, float health, float dex, float str, float mag, float mana, float def){
+    public Race(String name, float headWidth, float headHeight, float bodyWidth, float bodyHeight, float footOffset, float handOffsetX, float handOffsetY, float health, float dex, float str, float mag, float mana, float def){
         this.name = name;
         this.headWidth = headWidth;
         this.headHeight = headHeight;
         this.bodyHeight = bodyHeight;
         this.bodyWidth = bodyWidth;
+        this.footOffset = footOffset;
+        this.handOffsetX = handOffsetX;
+        this.handOffsetY = handOffsetY;
         this.health = health;
         this.dex = dex;
         this.str = str;
@@ -77,6 +80,18 @@ public abstract class Race {
 
     public float getHeadWidth() {
         return headWidth;
+    }
+
+    public float getFootOffset() {
+        return footOffset;
+    }
+
+    public float getHandOffsetX() {
+        return handOffsetX;
+    }
+
+    public float getHandOffsetY() {
+        return handOffsetY;
     }
 
     public static Race getRace(int id) {

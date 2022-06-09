@@ -16,7 +16,7 @@ import com.kittycatmedias.destrilite.world.Location;
 
 public class HumanRace extends Race {
     public HumanRace() {
-        super("human", 7/8f, 7/8f, 5/8f, 0.5f, 3, 1.5f, 2.5f, 0.5f, 1, 1);
+        super("human", 7/8f, 7/8f, 5/8f, 0.5f, 0f,-0.25f,0.5f,3, 1.5f, 2.5f, 0.5f, 1, 1);
     }
 
     @Override
