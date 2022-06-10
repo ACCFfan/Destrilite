@@ -59,7 +59,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
 
         World.setCurrentWorld(this.world);
 
-        player.getEntity().setLocation(new Location(this.world, 30, 50));
+        player.getEntity().setLocation(new Location(this.world, 30, 80));
         this.world.createEntity(player.getEntity());
 
         bufferViewMatrix = new Matrix4();

@@ -1,14 +1,12 @@
 package com.kittycatmedias.destrilite.entity;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.world.Location;
-import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
 public class Entity {
@@ -25,7 +23,7 @@ public class Entity {
 
     private boolean dirtyPosition,dirty, tcpPosition,tcp, hasCollision, hasGravity, walksUp, grounded;
     private int health;
-    private float width, height, totalFrames;
+    private float width, height, totalTime;
 
     public static final int NOTHING = -1, FROM_LEFT = 0, FROM_RIGHT = 1, FROM_TOP = 2, FROM_BOTTOM = 3;
 
@@ -75,6 +73,7 @@ public class Entity {
     }
 
     public void update(float delta){
+        totalTime += delta;
         boolean dirtyPos = location.move(delta);
         if(dirtyPos){
             bounds.x = location.getX();
@@ -94,20 +93,32 @@ public class Entity {
                 if(state.isCollidable() && state.getBounds().overlaps(bounds)){
                     //Vector3 velocity = location.getVelocity();
 
-                    final float stateX = state.getX(), stateY = state.getY(), entityX = location.getX(), entityY = location.getY();
+                    final float stateX = state.getX(), stateY = state.getY(), entityX = location.getX(), entityY = location.getY(),
+                            velX = location.getVelocity().x, velY = location.getVelocity().y,
+                            midBlockX = 0.5f + stateX, midBlockY = 0.5f + stateY, midEntityX = entityX + width / 2, midEntityY = entityY + height / 2,
+                            difMidX = midBlockX - midEntityX, difMidY = midBlockY - midEntityY;
                     //CHECK WHAT'S ABOVE / TO THE SIDE
-                    final boolean bottom = state.getY()+0.5f > entityY+height/2f && y > 0 && !blocks[x][y-1].isCollidable(),
-                            top = state.getY()+0.5f <= entityY+height/2f && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
-                            left = state.getX()+0.5f > entityX+width/2f && x > 0 && !blocks[x-1][y].isCollidable(),
-                            right = state.getX()+0.5f <= entityX+width/2f && x < blocks.length-1 && !blocks[x+1][y].isCollidable();
+                    final boolean
+                            bPos = midBlockY > midEntityY,
+                            tPos = midBlockY <= midEntityY,
+                            lPos = midBlockX > midEntityX,
+                            rPos = midBlockX <= midEntityX,
+
+                            bottom = bPos && y > 0 && !blocks[x][y-1].isCollidable(),
+                            top = tPos && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
+                            left = lPos && x > 0 && !blocks[x-1][y].isCollidable(),
+                            right = rPos && x < blocks.length-1 && !blocks[x+1][y].isCollidable();
                     //GET THE POSITION INSIDE
-                    final float inX = right ? (entityX + width) - stateX : (stateX + 1) - entityX, inY = bottom ? (entityY + height) - stateY : (stateY + 1) - entityY;
+                    //final float inX = right ? (entityX + width) - stateX : (stateX + 1) - entityX, inY = bottom ? (entityY + height) - stateY : (stateY + 1) - entityY;
+
+                    //final float inX = Math.min(Math.abs(entityX-x-0.5f), Math.abs(entityX+width-x-0.5f)),inY = Math.min(Math.abs(entityY-y-0.5f), Math.abs(entityY+height-y-0.5f));
+
 
                     final int from;
-                    if(bottom && ((!left && !right) || inY < inX)) from = FROM_BOTTOM;
-                    else if(top && ((!left && !right) || inY < inX))from = FROM_TOP;
-                    else if(left && ((!bottom && !top) || inX < inY))from = FROM_LEFT;
-                    else if (right && ((!bottom && !top) || inX < inY))from = FROM_RIGHT;
+                    if(bottom && ((!left && !right) || difMidY >= Math.abs(difMidX)) && velY > 0) from = FROM_BOTTOM;
+                    else if(top && ((!left && !right) || difMidY <= Math.abs(difMidX)) && velY < 0)from = FROM_TOP;
+                    else if(left && ((!bottom && !top) || difMidX >= Math.abs(difMidY)) && velX > 0)from = FROM_LEFT;
+                    else if (right && ((!bottom && !top) || difMidX <= Math.abs(difMidY)) && velX < 0)from = FROM_RIGHT;
                     else from = NOTHING;
 
 
@@ -143,7 +154,6 @@ public class Entity {
     }
 
     public void render(SpriteBatch batch, float delta) {
-        totalFrames += delta;
         type.render(batch, this, delta);
     }
 
@@ -282,8 +292,8 @@ public class Entity {
         else return FROM_TOP;
     }
 
-    public float getTotalFrames() {
-        return totalFrames;
+    public float getTotalTimeAlive() {
+        return totalTime;
     }
 
     public void setWidth(float width) {

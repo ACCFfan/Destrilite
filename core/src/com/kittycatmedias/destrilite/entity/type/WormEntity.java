@@ -37,7 +37,7 @@ public class WormEntity extends EntityType {
     @Override
     public void render(SpriteBatch batch, Entity entity, float delta) {
         boolean flip = (int) entity.getMeta("direction") == 1;
-        Sprite sprite = entity.getTotalFrames() % 2 <= 1 ? up : down;
+        Sprite sprite = entity.getTotalTimeAlive() % 2 <= 1 ? up : down;
         if(flip)sprite.flip(true, false);
         batch.draw(sprite, entity.getLocation().getX()-0.125f, entity.getLocation().getY()-0.125f, entity.getWidth()+0.25f, entity.getHeight()+0.25f);
         if(flip)sprite.flip(true, false);

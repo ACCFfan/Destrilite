@@ -1,11 +1,8 @@
 package com.kittycatmedias.destrilite.entity.type.player;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -61,12 +58,12 @@ public class Player {
         this.mana = race.getMana();
         this.def = race.getDef();
         maxSpeed = 10;
-        jumpHeight = 10f;
+        jumpHeight = 12f;
         dashSpeed = 25;
         ObjectMap<String, Object> meta = new ObjectMap<>();
         meta.put("race",race.getID());
         entity = new Entity(new Location(null, 0, 0), EntityType.PLAYER, meta, id+100);
-        entity.setWalksUp(true);
+        //entity.setWalksUp(true);
         entity.setWidth(Math.max(race.getHeadWidth(), race.getBodyWidth()) * scale);
         entity.setHeight((race.getHeadHeight()/2 + race.getBodyHeight() + 0.375f) * scale);
         limbLocation = new Location(null, 0, 0);
@@ -122,12 +119,12 @@ public class Player {
                     }
                 }
 
-                if(v.y > 0 && (Gdx.input.isKeyPressed(DestriliteGame.getInstance().JUMP_KEY) || Gdx.input.isKeyPressed(DestriliteGame.getInstance().UP_KEY)))v.y= Math.min(v.y+jumpHeight*scale*delta*1.5f, jumpHeight*scale);
+                if(v.y > 0 && (Gdx.input.isKeyPressed(DestriliteGame.getInstance().JUMP_KEY) || Gdx.input.isKeyPressed(DestriliteGame.getInstance().UP_KEY)))v.y= Math.min(v.y+jumpHeight*scale*delta*1.75f, jumpHeight*scale);
                 if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().DOWN_KEY))v.y-= jumpHeight*scale*delta*1.75f;
 
 
-                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_LEFT) && entity.getTotalFrames()-lastDash>=dashTimer){
-                    lastDash = entity.getTotalFrames();
+                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_LEFT) && entity.getTotalTimeAlive()-lastDash>=dashTimer){
+                    lastDash = entity.getTotalTimeAlive();
                     v.x = v.x < -dashSpeed*scale ? v.x : Math.max(v.x-dashSpeed*scale, -dashSpeed*scale);
                     //v.x -= dashSpeed*scale;
                     for(int i = 0; i < 6; i++) {
@@ -140,8 +137,8 @@ public class Player {
                         entity.getLocation().getWorld().spawnParticle(particle, true);
                     }
                 }
-                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_RIGHT) && entity.getTotalFrames()-lastDash>=dashTimer){
-                    lastDash = entity.getTotalFrames();
+                if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().DASH_RIGHT) && entity.getTotalTimeAlive()-lastDash>=dashTimer){
+                    lastDash = entity.getTotalTimeAlive();
                     v.x = v.x > dashSpeed*scale ? v.x : Math.min(v.x+dashSpeed*scale, dashSpeed*scale);
                     //v.x += dashSpeed*scale;
                     for(int i = 0; i < 6; i++) {
@@ -162,7 +159,7 @@ public class Player {
         Screen sc = DestriliteGame.getInstance().getScreen();
         if(sc instanceof GameScreen) {
             GameScreen screen = (GameScreen) sc;
-            float bob = MathUtils.sinDeg((entity.getTotalFrames()%1)*360) * pixel * 3 / 8;
+            float bob = MathUtils.sinDeg((entity.getTotalTimeAlive()%1)*360) * pixel * 3 / 8;
             if(screen.getPlayer() == this) {
                 Vector2 proj = screen.getViewport().unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
                 float x2 = proj.x, y2 = proj.y;
@@ -187,10 +184,12 @@ public class Player {
             }
 
             batch.draw(flip ? rightFootSprite : leftFootSprite, x2+leftFoot+fW/2+race.getFootOffset()*scale, y2, limbSize,limbSize);
-            batch.draw(flip ? rightHandSprite : leftHandSprite, x2+width-race.getHandOffsetX()*scale-limbSize, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
+            if(!flip)batch.draw(flip ? rightHandSprite : leftHandSprite, x2+width-race.getHandOffsetX()*scale-limbSize, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
+            else batch.draw(flip ? leftHandSprite : rightHandSprite, x2+race.getHandOffsetX()*scale, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
             batch.draw(flip ? leftFootSprite : rightFootSprite, x2+rightFoot+fW/2+race.getFootOffset()*scale, y2, limbSize,limbSize);
             batch.draw(bodySprite, x+entity.getWidth()/2-race.getBodyWidth()*scale/2-pixel, y + 2*pixel + bob,race.bodyWidth*scale+2*pixel, race.getBodyHeight()*scale+pixel*2);
-            batch.draw(flip ? leftHandSprite : rightHandSprite, x2+race.getHandOffsetX()*scale, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
+            if(!flip)batch.draw(flip ? leftHandSprite : rightHandSprite, x2+race.getHandOffsetX()*scale, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
+            else batch.draw(flip ? rightHandSprite : leftHandSprite, x2+width-race.getHandOffsetX()*scale-limbSize, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
             batch.draw(headSprite, x+entity.getWidth()/2-race.getHeadWidth()*scale/2-pixel, y + height - race.headHeight*scale/2 + bob, race.getHeadWidth()*scale/2+pixel,0,race.getHeadWidth()*scale+pixel*2, race.getHeadHeight()*scale+pixel*2,1,1,deg);
 
             if(flip){
