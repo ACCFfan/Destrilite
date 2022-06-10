@@ -88,7 +88,7 @@ public class Entity {
                     eX = (int) Math.min(location.getWorld().getWidth(), location.getX()+width+1),
                     eY = (int) Math.min(location.getWorld().getHeight(), location.getY()+height+1);
             BlockState[][] blocks = location.getWorld().getBlocks();
-            for(int x = sX; x < eX; x++)for(int y = sY; y < eY; y++){
+            for(int y = sY; y < eY; y++)for(int x = sX; x < eX; x++){
                 BlockState state = blocks[x][y];
                 if(state.isCollidable() && state.getBounds().overlaps(bounds)){
                     //Vector3 velocity = location.getVelocity();
@@ -96,18 +96,15 @@ public class Entity {
                     final float stateX = state.getX(), stateY = state.getY(), entityX = location.getX(), entityY = location.getY(),
                             velX = location.getVelocity().x, velY = location.getVelocity().y,
                             midBlockX = 0.5f + stateX, midBlockY = 0.5f + stateY, midEntityX = entityX + width / 2, midEntityY = entityY + height / 2,
-                            difMidX = midBlockX - midEntityX, difMidY = midBlockY - midEntityY;
+                            difMidX = Math.abs(midBlockX - midEntityX), difMidY = Math.abs(midBlockY - midEntityY);
                     //CHECK WHAT'S ABOVE / TO THE SIDE
                     final boolean
-                            bPos = midBlockY > midEntityY,
-                            tPos = midBlockY <= midEntityY,
-                            lPos = midBlockX > midEntityX,
-                            rPos = midBlockX <= midEntityX,
-
-                            bottom = bPos && y > 0 && !blocks[x][y-1].isCollidable(),
-                            top = tPos && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
-                            left = lPos && x > 0 && !blocks[x-1][y].isCollidable(),
-                            right = rPos && x < blocks.length-1 && !blocks[x+1][y].isCollidable();
+                            bottom = midBlockY > midEntityY && y > 0 && !blocks[x][y-1].isCollidable(),
+                            top = midBlockY <= midEntityY && y < blocks[x].length-1 && !blocks[x][y+1].isCollidable(),
+                            left = midBlockX > midEntityX && x > 0 && !blocks[x-1][y].isCollidable(),
+                            right = midBlockX <= midEntityX && x < blocks.length-1 && !blocks[x+1][y].isCollidable(),
+                            lr = (!bottom && !top) || difMidX >= difMidY,
+                            tb = (!left && !right) || difMidY >= difMidX;
                     //GET THE POSITION INSIDE
                     //final float inX = right ? (entityX + width) - stateX : (stateX + 1) - entityX, inY = bottom ? (entityY + height) - stateY : (stateY + 1) - entityY;
 
@@ -115,10 +112,10 @@ public class Entity {
 
 
                     final int from;
-                    if(bottom && ((!left && !right) || difMidY >= Math.abs(difMidX)) && velY > 0) from = FROM_BOTTOM;
-                    else if(top && ((!left && !right) || difMidY <= Math.abs(difMidX)) && velY < 0)from = FROM_TOP;
-                    else if(left && ((!bottom && !top) || difMidX >= Math.abs(difMidY)) && velX > 0)from = FROM_LEFT;
-                    else if (right && ((!bottom && !top) || difMidX <= Math.abs(difMidY)) && velX < 0)from = FROM_RIGHT;
+                    if(left && lr && velX > 0)from = FROM_LEFT;
+                    else if (right && lr && velX < 0)from = FROM_RIGHT;
+                    else if(bottom && tb && velY > 0) from = FROM_BOTTOM;
+                    else if(top && tb && velY < 0)from = FROM_TOP;
                     else from = NOTHING;
 
 

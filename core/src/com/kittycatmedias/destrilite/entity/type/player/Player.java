@@ -63,7 +63,7 @@ public class Player {
         ObjectMap<String, Object> meta = new ObjectMap<>();
         meta.put("race",race.getID());
         entity = new Entity(new Location(null, 0, 0), EntityType.PLAYER, meta, id+100);
-        //entity.setWalksUp(true);
+        entity.setWalksUp(true);
         entity.setWidth(Math.max(race.getHeadWidth(), race.getBodyWidth()) * scale);
         entity.setHeight((race.getHeadHeight()/2 + race.getBodyHeight() + 0.375f) * scale);
         limbLocation = new Location(null, 0, 0);
@@ -99,8 +99,14 @@ public class Player {
                 if(entity.isGrounded())jumps = 0;
 
                 Vector3 v = entity.getLocation().getVelocity();
-                if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().LEFT_KEY))v.x = v.x < -maxSpeed*scale ? v.x : Math.max(v.x-maxSpeed*delta*7*scale, -maxSpeed*scale);
-                if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().RIGHT_KEY))v.x = v.x > maxSpeed*scale ? v.x : Math.min(v.x+maxSpeed*delta*7*scale, maxSpeed*scale);
+                if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().LEFT_KEY)){
+                    float sp = Gdx.input.isKeyPressed(DestriliteGame.getInstance().SLOW_MOVE) ? 0.5f : 1;
+                    v.x = v.x < -maxSpeed*scale*sp ? v.x : Math.max(v.x-maxSpeed*delta*7*scale*sp, -maxSpeed*scale*sp);
+                }
+                if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().RIGHT_KEY)){
+                    float sp = Gdx.input.isKeyPressed(DestriliteGame.getInstance().SLOW_MOVE) ? 0.5f : 1;
+                    v.x = v.x > maxSpeed*scale*sp ? v.x : Math.min(v.x+maxSpeed*delta*7*scale*sp, maxSpeed*scale*sp);
+                }
 
                 if(Gdx.input.isKeyJustPressed(DestriliteGame.getInstance().JUMP_KEY) && (entity.isGrounded() || jumps < maxJumps)){
                     //v.y= Math.min(v.y+jumpHeight*scale, jumpHeight*scale);

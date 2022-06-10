@@ -29,10 +29,12 @@ public class DestriliteGame extends Game {
 	private DestriliteServer server;
 	private DestriliteClient client;
 
-	public final static String VERSION = "Pre-Alpha v0.0.10";
+	public final static String VERSION = "Pre-Alpha v0.0.11";
 	public final static String NAME = "Destrilite";
 
-	public int LEFT_KEY = Input.Keys.A, RIGHT_KEY = Input.Keys.D, DOWN_KEY = Input.Keys.S, UP_KEY = Input.Keys.W, JUMP_KEY = Input.Keys.SPACE, DASH_LEFT = Input.Keys.Q, DASH_RIGHT = Input.Keys.E, ZOOM = Input.Buttons.RIGHT;
+	public int LEFT_KEY = Input.Keys.A, RIGHT_KEY = Input.Keys.D, DOWN_KEY = Input.Keys.S, UP_KEY = Input.Keys.W,
+			JUMP_KEY = Input.Keys.SPACE, DASH_LEFT = Input.Keys.Q, DASH_RIGHT = Input.Keys.E, SLOW_MOVE = Input.Keys.SHIFT_LEFT,
+			ZOOM = Input.Buttons.RIGHT;
 
 
 	@Override
