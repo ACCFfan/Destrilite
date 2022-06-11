@@ -6,8 +6,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.esotericsoftware.kryonet.Connection;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.entity.Entity;
+import com.kittycatmedias.destrilite.entity.EntityType;
 import com.kittycatmedias.destrilite.event.EventListener;
 import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
@@ -64,9 +66,6 @@ public class World implements EventListener, PacketListener {
         entities = new Array<>();
         particles = new Array<>();
 
-        DestriliteGame.getInstance().getEventManager().addListener(this);
-        DestriliteGame.getInstance().getPacketManager().addListener(this);
-
         if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(WorldCreatePacket.create(this), true);
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
@@ -94,6 +93,7 @@ public class World implements EventListener, PacketListener {
         nextID = id+1;
         worlds.add(this);
         entities = new Array<>();
+        particles = new Array<>();
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
             blocks[x][y].setWorld(this);
@@ -212,7 +212,7 @@ public class World implements EventListener, PacketListener {
     }
 
     public void dispose(){
-        for(Entity entity : entities) entity.dispose();
+        for(Entity entity : entities)if(entity.getType() != EntityType.PLAYER) entity.dispose();
         worlds.removeValue(this, true);
         DestriliteGame.getInstance().getEventManager().removeListener(this);
         DestriliteGame.getInstance().getPacketManager().removeListener(this);
@@ -244,14 +244,17 @@ public class World implements EventListener, PacketListener {
     }
 
     @PacketHandler
-    public void onEntityCreate(EntityCreatePacket packet){
+    public void onEntityCreate(EntityCreatePacket packet, Connection connection){
         if(packet.world == id)createEntity(EntityCreatePacket.decode(packet));
     }
 
     @PacketHandler
-    public void onEntityMove(EntityMovePacket packet){
+    public void onEntityMove(EntityMovePacket packet, Connection connection){
         Entity entity = EntityMovePacket.decode(packet);
         entity.setLocation(packet.x,packet.y);
         entity.getLocation().getVelocity().set(packet.velX, packet.velY, entity.getLocation().getVelocity().z);
+        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().getConnections().forEach(conn ->{
+            if(conn != connection)conn.sendUDP(packet);
+        });
     }
 }

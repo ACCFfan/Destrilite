@@ -3,7 +3,7 @@ package com.kittycatmedias.destrilite.network.packet.packets;
 import com.kittycatmedias.destrilite.entity.Entity;
 
 public class EntityMovePacket {
-    public int id;
+    public long id;
     public float x, y, velX, velY;
 
     public static EntityMovePacket create(Entity entity){

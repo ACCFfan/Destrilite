@@ -1,6 +1,7 @@
 package com.kittycatmedias.destrilite.network;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Collections;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -8,9 +9,8 @@ import com.esotericsoftware.kryonet.Server;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionDisconnectedEvent;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionMadeEvent;
-import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
-import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
-import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
+import com.kittycatmedias.destrilite.network.packet.packets.*;
+import com.sun.tools.jdi.Packet;
 
 public class DestriliteServer extends Listener {
     public static final int DEFAULT_PORT = 37189;
@@ -19,6 +19,8 @@ public class DestriliteServer extends Listener {
     private final DestriliteGame game;
 
     private final Array<Connection> connections;
+
+    private boolean allowing;
 
     private final int UDP_PORT, TCP_PORT;
 
@@ -60,6 +62,7 @@ public class DestriliteServer extends Listener {
 
 
             ready = true;
+            allowing = true;
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -97,10 +100,19 @@ public class DestriliteServer extends Listener {
         return UDP_PORT;
     }
 
+    public boolean isAllowing() {
+        return allowing;
+    }
+
+    public void setAllowing(boolean allowing) {
+        this.allowing = allowing;
+    }
+
     @Override
     public void connected(Connection connection) {
         connections.add(connection);
         game.getEventManager().callEvent(new ConnectionMadeEvent(connection));
+        if(!allowing)connection.close();
     }
 
     @Override
@@ -111,14 +123,17 @@ public class DestriliteServer extends Listener {
 
     @Override
     public void received(Connection connection, Object p) {
-        game.getPacketManager().callPacket(p);
+        game.getPacketManager().callPacket(p, connection);
     }
 
     public static void registerPackets(Kryo kryo){
         kryo.register(WorldCreatePacket.class);
         kryo.register(EntityCreatePacket.class);
         kryo.register(EntityMovePacket.class);
-
+        kryo.register(PlayerConnectPacket.class);
+        kryo.register(PlayerDisconnectPacket.class);
+        kryo.register(ServerClosePacket.class);
+        kryo.register(SetWorldPacket.class);
 
         kryo.register(String[].class);
         kryo.register(Object[].class);

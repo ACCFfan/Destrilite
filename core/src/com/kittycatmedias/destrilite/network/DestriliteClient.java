@@ -70,7 +70,12 @@ public class DestriliteClient extends Listener {
 
     @Override
     public void received(Connection connection, Object p) {
-        game.getPacketManager().callPacket(p);
+        game.getPacketManager().callPacket(p, connection);
+    }
+
+    public void sendToServer(Object packet, boolean tcp){
+        if(tcp)client.sendTCP(packet);
+        else client.sendUDP(packet);
     }
 
 }

@@ -10,6 +10,7 @@ public class PlatformBlock extends BlockType {
 
     public PlatformBlock() {
         super("platform", 3, false, true, false, false, false);
+        partiallyCollidable = true;
     }
 
     @Override

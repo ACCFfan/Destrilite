@@ -8,7 +8,8 @@ import com.kittycatmedias.destrilite.world.Location;
 import com.kittycatmedias.destrilite.world.World;
 
 public class EntityCreatePacket {
-    public int id, world, type;
+    public long id;
+    public int world, type;
     public float x, y;
     public Object[] metaValues;
     public String[] metaKeys;

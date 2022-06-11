@@ -3,6 +3,7 @@ package com.kittycatmedias.destrilite.network.packet;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.esotericsoftware.kryonet.Connection;
 
 import java.lang.reflect.Method;
 
@@ -57,7 +58,7 @@ public class PacketManager {
         return l2;
     }
 
-    public void callPacket(Object packet) {
+    public void callPacket(Object packet, Connection connection) {
 
 
         Class<?> c = packet.getClass();
@@ -66,7 +67,7 @@ public class PacketManager {
 
             PacketEntry e = listenerContents.get(l.getClass());
             try {
-                e.m.get(c).invoke(l, packet);
+                e.m.get(c).invoke(l, packet, connection);
             }catch(Exception ex) {
                 Gdx.app.log("Destrilite", "Error invoking " + packet + " in " + l + "!");
                 ex.printStackTrace();

@@ -98,8 +98,8 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
     public void render(float delta) {
         super.render(delta);
         if(world != null) {
-            world.update(Math.min(0.15f, delta));
-            for(Player player : players)player.update(Math.min(0.15f, delta));
+            world.update(Math.min(0.05f, delta));
+            for(Player player : players)player.update(Math.min(0.05f, delta));
 
             if(camera.position.x - camera.viewportWidth / 2 < 0)camera.position.x = 0 + camera.viewportWidth / 2;
             else if(camera.position.x + camera.viewportWidth / 2 > world.getWidth())camera.position.x = world.getWidth() - camera.viewportWidth / 2;
@@ -193,7 +193,20 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         bufferMatrix.setToOrtho(0, blockBuffer.getWidth(), blockBuffer.getHeight(),0,0,1);
     }
 
+    public void addPlayer(Player player){
+        if(!players.contains(player,true)){
+            players.add(player);
+
+            player.getEntity().setLocation(new Location(this.world, 30, 80));
+            this.world.createEntity(player.getEntity());
+        }
+    }
+
     public Player getPlayer() {
         return player;
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
     }
 }

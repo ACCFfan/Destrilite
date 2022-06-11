@@ -3,19 +3,28 @@ package com.kittycatmedias.destrilite.client;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.esotericsoftware.kryonet.Connection;
 import com.kittycatmedias.destrilite.entity.type.player.Player;
 import com.kittycatmedias.destrilite.entity.type.player.Race;
+import com.kittycatmedias.destrilite.event.EventHandler;
 import com.kittycatmedias.destrilite.event.EventListener;
+import com.kittycatmedias.destrilite.event.events.network.ConnectionDisconnectedEvent;
 import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
-import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
+import com.kittycatmedias.destrilite.network.packet.packets.*;
+import com.kittycatmedias.destrilite.world.World;
+import com.kittycatmedias.destrilite.world.generator.WorldGenerator;
+import com.sun.tools.jdi.Packet;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,12 +33,20 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
     private VerticalGroup mainGroup, spGroup, mpGroup, optionsGroup;
 
     private Race race;
+    private long id;
+
+    private ObjectMap<Connection, Player> connections;
+    private Array<Player> players;
+    private Player player;
 
     private TextureAtlas playerAtlas;
 
     public MainMenuScreen(DestriliteGame game){
         super(game, new ScalingViewport(Scaling.fit, 192*2, 108*2));
         race = Race.HUMAN;
+
+        players = new Array<>();
+        connections = new ObjectMap<>();
 
         assetManager.load("atlas/player.atlas", TextureAtlas.class);
     }
@@ -126,9 +143,9 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         setRaceButton.pad(buttonPad);
         setRaceTable.add(setRaceButton);
 
-        Image raceImage = new Image(race.getHeadSprite());
-        raceImage.setScaling(Scaling.fillX);
-        setRaceTable.add(raceImage).width(19).expand().fill();
+        Image spRaceImage = new Image(race.getHeadSprite());
+        spRaceImage.setScaling(Scaling.fillX);
+        setRaceTable.add(spRaceImage).width(19).expand().fill();
         setRaceTable.pack();
 
         Table startSPTable = new Table();
@@ -173,8 +190,6 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
 
 
 
-
-
         CheckBox.CheckBoxStyle checkBoxStyle = new CheckBox.CheckBoxStyle(game.getUISkin().getDrawable("button_up"), game.getUISkin().getDrawable("button_down"), game.getFont(), Color.WHITE);
 
         CheckBox clientOrServerCheck = new CheckBox("Server", checkBoxStyle);
@@ -194,6 +209,9 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         TextField portTCPField = new TextField("37190", style);
         portTCPField.setAlignment(Align.center);
         portTCPField.setWidth(100);
+        TextField nameField = new TextField("Name", style);
+        nameField.setAlignment(Align.center);
+        nameField.setWidth(100);
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(game.getFont(), Color.CORAL);
 
@@ -244,13 +262,13 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 race = Race.getRace((race.getID()+1)%Race.getRaces().size);
-                raceImage.setDrawable(new TextureRegionDrawable(race.getHeadSprite()));
+                spRaceImage.setDrawable(new TextureRegionDrawable(race.getHeadSprite()));
             }
         });
         startSPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Player player = new Player(race, -1);
+                Player player = new Player(race, -1, "test");
                 game.changeScreen(new GameScreen(game, null, player));
             }
         });
@@ -278,13 +296,17 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         cancelMPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(serverMode.get())game.stopServer();
+                if(serverMode.get()){
+                    game.getServer().sendToAll(new ServerClosePacket(), true);
+                    game.stopServer();
+                }
                 else game.stopClient();
                 mpGroup.addActorAfter(mpLabel, mpBackTable);
                 if(serverMode.get())mpGroup.addActorAfter(mpLabel, startServerTable);
                 else mpGroup.addActorAfter(mpLabel, connectMPTable);
                 mpGroup.addActorAfter(mpLabel, portTCPField);
                 mpGroup.addActorAfter(mpLabel, portUDPField);
+                mpGroup.addActorAfter(portUDPField, nameField);
                 if(serverMode.get())mpGroup.addActorAfter(mpLabel, ipField);
                 mpGroup.addActorAfter(mpLabel, clientOrServerCheck);
                 mpGroup.removeActor(cancelMPTable);
@@ -293,8 +315,15 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         startMPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Player player = new Player(race, -1);
-                game.changeScreen(new GameScreen(game, null, player));
+                game.getServer().setAllowing(false);
+                World world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
+                game.getServer().sendToAll(WorldCreatePacket.create(world), true);
+                SetWorldPacket packet = new SetWorldPacket();
+                packet.world = world.getID();
+                game.getServer().sendToAll(packet, true);
+                GameScreen screen = new GameScreen(game, world, player);
+                game.changeScreen(screen);
+                for(Player player : players)screen.addPlayer(player);
             }
         });
         connectMPButton.addListener(new ClickListener(){
@@ -302,13 +331,21 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
             public void clicked(InputEvent event, float x, float y) {
                 try{
                     game.createClient(ipField.getText().replaceAll(" ", ""), Integer.parseInt(portUDPField.getText().replaceAll(" ", "")), Integer.parseInt(portTCPField.getText().replaceAll(" ", "")));
+                    PlayerConnectPacket packet = new PlayerConnectPacket();
+                    id = MathUtils.random.nextLong();
+                    packet.id = id;
+                    packet.name = nameField.getText().trim();
+                    packet.race = 0;
+                    game.getClient().sendToServer(packet, true);
                     mpGroup.removeActor(mpBackTable);
                     mpGroup.removeActor(portTCPField);
                     mpGroup.removeActor(portUDPField);
                     mpGroup.removeActor(connectMPTable);
                     mpGroup.removeActor(ipField);
                     mpGroup.removeActor(clientOrServerCheck);
+                    mpGroup.removeActor(nameField);
                     mpGroup.addActor(cancelMPTable);
+                    players = new Array<>();
                 }catch(Exception e){e.printStackTrace();}
             }
         });
@@ -322,8 +359,13 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                     mpGroup.removeActor(portUDPField);
                     mpGroup.removeActor(startServerTable);
                     mpGroup.removeActor(clientOrServerCheck);
+                    mpGroup.removeActor(nameField);
                     mpGroup.addActor(startMPTable);
                     mpGroup.addActor(cancelMPTable);
+                    connections = new ObjectMap<>();
+                    players = new Array<>();
+                    player = new Player(Race.getRace(0), MathUtils.random.nextLong(), nameField.getText().trim());
+                    players.add(player);
                 }catch(Exception e){e.printStackTrace();}
             }
         });
@@ -334,10 +376,10 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                 if(serverMode.get()){
                     mpGroup.removeActor(ipField);
                     mpGroup.removeActor(connectMPTable);
-                    mpGroup.addActorAfter(portTCPField, startServerTable);
+                    mpGroup.addActorAfter(nameField, startServerTable);
                 }else{
                     mpGroup.addActorAfter(clientOrServerCheck, ipField);
-                    mpGroup.addActorAfter(portTCPField, connectMPTable);
+                    mpGroup.addActorAfter(nameField, connectMPTable);
                     mpGroup.removeActor(startServerTable);
                 }
             }
@@ -362,6 +404,7 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         mpGroup.addActor(ipField);
         mpGroup.addActor(portUDPField);
         mpGroup.addActor(portTCPField);
+        mpGroup.addActor(nameField);
         mpGroup.addActor(connectMPTable);
         mpGroup.addActor(mpBackTable);
 
@@ -375,7 +418,48 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
     }
 
     @PacketHandler
-    public void onWorldCreate(WorldCreatePacket packet){
-        //if(game.isClient())game.changeScreen(new GameScreen(game, WorldCreatePacket.decode(packet)));
+    public void onWorldCreate(WorldCreatePacket packet, Connection connection){
+        if(game.isClient()){
+            World world = WorldCreatePacket.decode(packet);
+            GameScreen screen = new GameScreen(game, world, player);
+            game.changeScreen(screen);
+            for(Player player : players)screen.addPlayer(player);
+        }
+    }
+
+    @PacketHandler
+    public void onPlayerConnect(PlayerConnectPacket packet, Connection connection){
+        Player player = new Player(Race.getRace(packet.race), packet.id, packet.name);
+        players.add(player);
+        if(game.isServer()){
+            connections.put(connection, player);
+            game.getServer().sendToAll(packet, true);
+            for(Player p : players)if(p != player){
+                PlayerConnectPacket pa = new PlayerConnectPacket();
+                pa.id = p.getID();
+                pa.race = p.getRace().getID();
+                pa.name = p.getName();
+                connection.sendTCP(pa);
+            }
+        }else if(player.getID() == id)this.player = player;
+    }
+
+    @PacketHandler
+    public void onPlayerDisconnect(PlayerDisconnectPacket packet, Connection connection){
+        Player player = Player.getPlayer(packet.id);
+        if(player != null)player.dispose();
+        players.removeValue(player, true);
+    }
+
+    @EventHandler
+    public void onConnectionDisconnected(ConnectionDisconnectedEvent event){
+        if(connections.containsKey(event.getConncetion())){
+            Player player = connections.get(event.getConncetion());
+            connections.remove(event.getConncetion());
+            PlayerDisconnectPacket packet = new PlayerDisconnectPacket();
+            packet.id = player.getID();
+            onPlayerDisconnect(packet, event.getConncetion());
+            game.getServer().sendToAll(packet, true);
+        }
     }
 }

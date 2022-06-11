@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Collections;
 import com.kittycatmedias.destrilite.event.EventManager;
 import com.kittycatmedias.destrilite.network.DestriliteClient;
 import com.kittycatmedias.destrilite.network.DestriliteServer;
@@ -29,7 +30,7 @@ public class DestriliteGame extends Game {
 	private DestriliteServer server;
 	private DestriliteClient client;
 
-	public final static String VERSION = "Pre-Alpha v0.0.11";
+	public final static String VERSION = "Pre-Alpha v0.0.12";
 	public final static String NAME = "Destrilite";
 
 	public int LEFT_KEY = Input.Keys.A, RIGHT_KEY = Input.Keys.D, DOWN_KEY = Input.Keys.S, UP_KEY = Input.Keys.W,
@@ -45,8 +46,11 @@ public class DestriliteGame extends Game {
 		eventManager = new EventManager();
 		packetManager = new PacketManager();
 		font = new BitmapFont(Gdx.files.internal("font/font.fnt"), false);
+		font.setUseIntegerPositions(false);
 		uiAtlas = new TextureAtlas("atlas/ui.atlas");
 		uiSkin = new Skin(uiAtlas);
+
+		Collections.allocateIterators = true;
 
 		changeScreen(new MainMenuScreen(this));
 	}
@@ -174,5 +178,9 @@ public class DestriliteGame extends Game {
 
 	public DestriliteServer getServer() {
 		return server;
+	}
+
+	public DestriliteClient getClient() {
+		return client;
 	}
 }

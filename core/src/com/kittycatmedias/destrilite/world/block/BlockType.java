@@ -13,6 +13,7 @@ public class BlockType {
 
     protected final int damage, id;
     protected final boolean indestructible, collidable, flippableX, flippableY, rotatable;
+    protected boolean partiallyCollidable;
 
     protected final String name;
 
@@ -55,6 +56,7 @@ public class BlockType {
         this.flippableX = flippableX;
         this.flippableY = flippableY;
         this.rotatable = rotatable;
+        partiallyCollidable = false;
         id = nextID++;
     }
 
@@ -85,8 +87,6 @@ public class BlockType {
         //        (location.getY() >= state.getY() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight())) + "," + state.getX() + "," + state.getY() + "," + location.getY());
 
         if(entity.walksUp() && ((from == Entity.FROM_LEFT && location.getVelocity().x > 0) || (from == Entity.FROM_RIGHT && location.getVelocity().x < 0)) && location.getY() >= state.getY() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight())){
-            //final float inX = state.getX()+0.5f <= location.getX()+entity.getWidth()/2f ? location.getX()-state.getX()-0.5f : Math.abs(location.getX()+entity.getWidth()-state.getX()-0.5f);
-
             entity.setLocation(location.getX(), state.getY()+1);
             //location.getVelocity().y = Math.max(location.getVelocity().y, Math.max((1-(location.getY() - state.getY())) * 6 * (location.getWorld().getGravity() / World.DEFAULT_GRAVITY), 0));
         }
@@ -154,5 +154,9 @@ public class BlockType {
 
     public static BlockType getType(int id){
         return types.get(id);
+    }
+
+    public boolean isAnyCollidable() {
+        return collidable || partiallyCollidable;
     }
 }

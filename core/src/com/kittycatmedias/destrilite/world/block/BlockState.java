@@ -28,6 +28,7 @@ public class BlockState {
         meta = new ObjectMap<>();
         this.wall = WallType.AIR;
         bounds = new Rectangle(x,y,1,1);
+        collidable = true;
         setType(type);
     }
 
@@ -37,6 +38,7 @@ public class BlockState {
         meta = new ObjectMap<>();
         this.wall = wall;
         bounds = new Rectangle(x,y,1,1);
+        collidable = true;
         setType(block);
     }
 
@@ -123,7 +125,7 @@ public class BlockState {
     }
 
     public boolean isCollidable() {
-        return collidable;
+        return collidable && type.isCollidable();
     }
 
     public void setCollidable(boolean collidable){
@@ -142,7 +144,6 @@ public class BlockState {
             this.meta.clear();
             if(meta != null)meta.keys().forEach(k -> this.meta.put(k, meta.get(k)));
             this.type = type;
-            collidable = type.isCollidable();
             damage = type.getDamage();
             randomizeFlip();
             type.onCreate(this);
@@ -170,5 +171,9 @@ public class BlockState {
         type.onCollide(this, entity, from);
 
 
+    }
+
+    public boolean isAnyCollidable() {
+        return collidable && type.isAnyCollidable();
     }
 }

@@ -5,13 +5,14 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
+import com.kittycatmedias.destrilite.client.GameScreen;
 import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.world.Location;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
 public class Entity {
 
-    private static int nextID;
+    private static long nextID;
     private static final Array<Entity> entities = new Array<>();
 
     private final Location location, startLocation;
@@ -19,7 +20,7 @@ public class Entity {
     private final ObjectMap<String, Object> meta;
     private final Rectangle bounds;
 
-    private final int id;
+    private final long id;
 
     private boolean dirtyPosition,dirty, tcpPosition,tcp, hasCollision, hasGravity, walksUp, grounded;
     private int health;
@@ -50,7 +51,7 @@ public class Entity {
 
 
     //ONLY FOR USE FROM PACKETS
-    public Entity(Location location, EntityType type, ObjectMap<String, Object> meta, int id){
+    public Entity(Location location, EntityType type, ObjectMap<String, Object> meta, long id){
         this.location = location;
         startLocation = location.copy();
         this.type = type;
@@ -90,7 +91,7 @@ public class Entity {
             BlockState[][] blocks = location.getWorld().getBlocks();
             for(int y = sY; y < eY; y++)for(int x = sX; x < eX; x++){
                 BlockState state = blocks[x][y];
-                if(state.isCollidable() && state.getBounds().overlaps(bounds)){
+                if(state.isAnyCollidable() && state.getBounds().overlaps(bounds)){
                     //Vector3 velocity = location.getVelocity();
 
                     final float stateX = state.getX(), stateY = state.getY(), entityX = location.getX(), entityY = location.getY(),
@@ -139,14 +140,22 @@ public class Entity {
         type.update(this, delta);
 
         if(dirtyPos)markDirtyPosition(false);
-        if(DestriliteGame.getInstance().isServer()){
-            if(dirtyPosition) {
-                //TODO packet
-                DestriliteGame.getInstance().getServer().sendToAll(EntityMovePacket.create(this),tcpPosition);
+        if(DestriliteGame.getInstance().getScreen() instanceof GameScreen){
+            GameScreen screen = (GameScreen) DestriliteGame.getInstance().getScreen();
+            if(DestriliteGame.getInstance().isServer()){
+                if(dirtyPosition && (type != EntityType.PLAYER || screen.getPlayer().getEntity() == this)) {
+                    //TODO packet
+                    DestriliteGame.getInstance().getServer().sendToAll(EntityMovePacket.create(this),tcpPosition);
 
+                    dirtyPosition = false;
+                    tcpPosition = false;
+                }
+            }else if(screen.getPlayer().getEntity() == this){
+                DestriliteGame.getInstance().getClient().sendToServer(EntityMovePacket.create(this),tcpPosition);
                 dirtyPosition = false;
                 tcpPosition = false;
             }
+
         }
     }
 
@@ -195,7 +204,7 @@ public class Entity {
         dirty = true;
     }
 
-    public int getID() {
+    public long getID() {
         return id;
     }
 
@@ -257,7 +266,7 @@ public class Entity {
         return entities;
     }
 
-    public static Entity getEntity(int id){
+    public static Entity getEntity(long id){
         for(Entity entity : entities)if(entity.getID() == id)return entity;
         return null;
     }

@@ -3,6 +3,8 @@ package com.kittycatmedias.destrilite.entity.type.player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -10,7 +12,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
+import com.kittycatmedias.destrilite.client.DestriliteScreen;
 import com.kittycatmedias.destrilite.client.GameScreen;
 import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.entity.EntityType;
@@ -21,28 +25,27 @@ import com.kittycatmedias.destrilite.world.particle.ParticleType;
 public class Player {
 
     private float health, dex, str, mag, mana, def, scale, deg, pixel, maxSpeed, jumpHeight, dashSpeed, dashTimer, lastDash, walk;
-    private final int ID;
+    private final long ID;
     private int jumps, maxJumps;
 
     private boolean flip;
 
-    private static int nextID;
-
-    private Race race;
-
-    private Entity entity;
-
+    private final Race race;
+    private final Entity entity;
     private final Location limbLocation;
+    private final String name;
 
     private static final Array<Player> players = new Array<>();
+    private static long nextID;
 
     public static Player registerPlayer(Player player){
         if(!players.contains(player, true))players.add(player);
         return player;
     }
 
-    public Player(Race race, int id){
+    public Player(Race race, long id, String name){
         this.race = race;
+        this.name = name;
         if(id == -1) this.ID = nextID++;
         else this.ID = id;
         jumps = 0;
@@ -79,7 +82,7 @@ public class Player {
             limbLocation.setX(limbLocation.getX() + (entity.getLocation().getX() - limbLocation.getX()) * delta * 30);
             limbLocation.setY(limbLocation.getY() + (entity.getLocation().getY() - limbLocation.getY()) * delta * 30);
         }
-        if(entity.isGrounded())walk=(walk+entity.getLocation().getVelocity().x/scale)%360;
+        if(entity.isGrounded())walk=(walk+entity.getLocation().getVelocity().x*1.75f/scale)%360;
         if(sc instanceof GameScreen) {
             GameScreen screen = (GameScreen) sc;
             if (screen.getPlayer() == this) {
@@ -101,10 +104,12 @@ public class Player {
                 Vector3 v = entity.getLocation().getVelocity();
                 if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().LEFT_KEY)){
                     float sp = Gdx.input.isKeyPressed(DestriliteGame.getInstance().SLOW_MOVE) ? 0.5f : 1;
+                    //v.x = v.x < -maxSpeed*sp ? v.x : Math.max(v.x-maxSpeed*delta*7*sp, -maxSpeed*sp);
                     v.x = v.x < -maxSpeed*scale*sp ? v.x : Math.max(v.x-maxSpeed*delta*7*scale*sp, -maxSpeed*scale*sp);
                 }
                 if(Gdx.input.isKeyPressed(DestriliteGame.getInstance().RIGHT_KEY)){
                     float sp = Gdx.input.isKeyPressed(DestriliteGame.getInstance().SLOW_MOVE) ? 0.5f : 1;
+                    //v.x = v.x > maxSpeed*sp ? v.x : Math.min(v.x+maxSpeed*delta*7*sp, maxSpeed*sp);
                     v.x = v.x > maxSpeed*scale*sp ? v.x : Math.min(v.x+maxSpeed*delta*7*scale*sp, maxSpeed*scale*sp);
                 }
 
@@ -173,8 +178,8 @@ public class Player {
                 deg = MathUtils.radiansToDegrees * MathUtils.atan((y2 - (entity.getLocation().getY() + entity.getHeight() + bob)) / (x2 - (entity.getLocation().getX() + entity.getWidth() / 2)));
             }
 
-            float pixel = scale * 0.125f, x = entity.getLocation().getX(), y = entity.getLocation().getY(), height = entity.getHeight(), width = entity.getWidth(),
-                    x2 = limbLocation.getX(), y2 = limbLocation.getY(),limbSize = pixel * 3,
+            float pixel = scale * 0.125f, x = entity.getLocation().getX(), y = entity.getLocation().getY() - pixel, height = entity.getHeight(), width = entity.getWidth(),
+                    x2 = limbLocation.getX(), y2 = limbLocation.getY() - pixel,limbSize = pixel * 3,
                     fW = (width - race.getFootOffset()*scale*2 - limbSize), rightFoot = MathUtils.sinDeg(walk-90) / 2f * fW,leftFoot = MathUtils.cosDeg(walk) / 2f * fW;
 
             Sprite headSprite = race.getHeadSprite(), bodySprite = race.getBodySprite(), leftHandSprite = race.getLeftHandSprite(), rightHandSprite = race.getRightHandSprite(), leftFootSprite = race.getLeftFootSprite(), rightFootSprite = race.getRightFootSprite();
@@ -197,6 +202,14 @@ public class Player {
             if(!flip)batch.draw(flip ? leftHandSprite : rightHandSprite, x2+race.getHandOffsetX()*scale, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
             else batch.draw(flip ? rightHandSprite : leftHandSprite, x2+width-race.getHandOffsetX()*scale-limbSize, y2+race.getHandOffsetY()*scale, limbSize,limbSize);
             batch.draw(headSprite, x+entity.getWidth()/2-race.getHeadWidth()*scale/2-pixel, y + height - race.headHeight*scale/2 + bob, race.getHeadWidth()*scale/2+pixel,0,race.getHeadWidth()*scale+pixel*2, race.getHeadHeight()*scale+pixel*2,1,1,deg);
+
+            if(!name.equals("")) {
+                BitmapFont font = DestriliteGame.getInstance().getFont();
+                float scaleX = font.getData().scaleX, scaleY = font.getData().scaleY;
+                font.getData().setScale(1/16f);
+                font.draw(batch, name, x + width / 2 + DestriliteGame.getInstance().getTextOffset(font, name), y + height + pixel * 12);
+                font.getData().setScale(scaleX, scaleY);
+            }
 
             if(flip){
                 headSprite.flip(true,false);
@@ -225,12 +238,12 @@ public class Player {
         return entity;
     }
 
-    public static Player getPlayer(int id){
+    public static Player getPlayer(long id){
         for(Player player : players)if(player.getID() == id)return player;
         return null;
     }
 
-    public int getID() {
+    public long getID() {
         return ID;
     }
 
@@ -270,5 +283,13 @@ public class Player {
 
     public Race getRace() {
         return race;
+    }
+
+    public void dispose(){
+        players.removeValue(this, true);
+    }
+
+    public String getName() {
+        return name;
     }
 }
