@@ -15,7 +15,7 @@ public class DestriliteClient extends Listener {
     private final int UDP_PORT, TCP_PORT;
 
     public DestriliteClient(DestriliteGame game, String ip) {
-        client = new Client();
+        client = new Client(131072,131072);
         UDP_PORT = DestriliteServer.DEFAULT_PORT;
         TCP_PORT = DestriliteServer.DEFAULT_PORT+1;
         IP = ip;

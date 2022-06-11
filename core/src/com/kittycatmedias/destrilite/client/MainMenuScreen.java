@@ -306,8 +306,8 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                 else mpGroup.addActorAfter(mpLabel, connectMPTable);
                 mpGroup.addActorAfter(mpLabel, portTCPField);
                 mpGroup.addActorAfter(mpLabel, portUDPField);
-                mpGroup.addActorAfter(portUDPField, nameField);
-                if(serverMode.get())mpGroup.addActorAfter(mpLabel, ipField);
+                mpGroup.addActorAfter(portTCPField, nameField);
+                if(!serverMode.get())mpGroup.addActorAfter(mpLabel, ipField);
                 mpGroup.addActorAfter(mpLabel, clientOrServerCheck);
                 mpGroup.removeActor(cancelMPTable);
             }

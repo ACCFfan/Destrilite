@@ -30,7 +30,7 @@ public class DestriliteGame extends Game {
 	private DestriliteServer server;
 	private DestriliteClient client;
 
-	public final static String VERSION = "Pre-Alpha v0.0.12";
+	public final static String VERSION = "Pre-Alpha v0.0.13";
 	public final static String NAME = "Destrilite";
 
 	public int LEFT_KEY = Input.Keys.A, RIGHT_KEY = Input.Keys.D, DOWN_KEY = Input.Keys.S, UP_KEY = Input.Keys.W,

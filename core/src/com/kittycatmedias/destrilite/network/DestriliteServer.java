@@ -27,7 +27,7 @@ public class DestriliteServer extends Listener {
     private boolean ready;
 
     public DestriliteServer(DestriliteGame game) {
-        server = new Server();
+        server = new Server(131072,131072);
         UDP_PORT = DEFAULT_PORT;
         TCP_PORT = DEFAULT_PORT+1;
 
