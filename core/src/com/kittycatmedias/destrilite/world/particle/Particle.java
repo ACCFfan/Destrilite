@@ -2,6 +2,7 @@ package com.kittycatmedias.destrilite.world.particle;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.kittycatmedias.destrilite.world.Location;
 
 public class Particle {
@@ -13,7 +14,7 @@ public class Particle {
 
     private boolean flipX, flipY, dispose;
     private int rotation;
-    private final int ID;
+    private final int id;
     private Color color;
 
     private static int nextID = 0;
@@ -23,10 +24,10 @@ public class Particle {
         this.type = type;
         this.location = location;
         this.scale = 1;
-        flipX = false;
-        flipY = false;
-        rotation = 0;
-        ID = nextID++;
+        flipX = MathUtils.randomBoolean();
+        flipY = MathUtils.randomBoolean();
+        rotation = MathUtils.random(4);
+        id = nextID++;
         this.color = null;
 
         type.onCreate(this);
@@ -82,7 +83,7 @@ public class Particle {
     }
 
     public int getID() {
-        return ID;
+        return id;
     }
 
     public void dispose(){

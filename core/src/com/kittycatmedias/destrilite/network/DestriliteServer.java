@@ -84,6 +84,15 @@ public class DestriliteServer extends Listener {
         });
     }
 
+    public void sendToAllExcept(Object packet, boolean tcp, Connection connection){
+        connections.forEach(conn -> {
+            if(conn != connection) {
+                if (tcp) conn.sendTCP(packet);
+                else conn.sendUDP(packet);
+            }
+        });
+    }
+
     public Server getServer() {
         return server;
     }
@@ -134,6 +143,9 @@ public class DestriliteServer extends Listener {
         kryo.register(PlayerDisconnectPacket.class);
         kryo.register(ServerClosePacket.class);
         kryo.register(SetWorldPacket.class);
+        kryo.register(EntityChangeWorldPacket.class);
+        kryo.register(PlayerHeadMovePacket.class);
+        kryo.register(ParticleCreatePacket.class);
 
         kryo.register(String[].class);
         kryo.register(Object[].class);

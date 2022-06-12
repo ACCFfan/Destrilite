@@ -8,14 +8,14 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.esotericsoftware.kryonet.Connection;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
+import com.kittycatmedias.destrilite.client.GameScreen;
 import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.entity.EntityType;
+import com.kittycatmedias.destrilite.entity.type.player.Player;
 import com.kittycatmedias.destrilite.event.EventListener;
 import com.kittycatmedias.destrilite.network.packet.PacketHandler;
 import com.kittycatmedias.destrilite.network.packet.PacketListener;
-import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
-import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
-import com.kittycatmedias.destrilite.network.packet.packets.WorldCreatePacket;
+import com.kittycatmedias.destrilite.network.packet.packets.*;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 import com.kittycatmedias.destrilite.world.block.BlockType;
 import com.kittycatmedias.destrilite.world.block.WallType;
@@ -29,7 +29,7 @@ public class World implements EventListener, PacketListener {
 
     private final WorldGenerator generator;
     private final BlockState[][] blocks;
-    private final int width, height;
+    private final int width, height, id;
     private final long seed;
 
     private final Rectangle viewBounds;
@@ -40,42 +40,12 @@ public class World implements EventListener, PacketListener {
 
     private float gravity;
 
-    private int id;
-
     private static int nextID = 0;
 
     public static final Array<World> worlds = new Array<>();
 
     private static World currentWorld;
 
-    public World(WorldGenerator generator, long seed){
-
-        DestriliteGame.getInstance().getEventManager().addListener(this);
-        DestriliteGame.getInstance().getPacketManager().addListener(this);
-
-        this.generator = generator;
-        this.seed = seed;
-        random = new Random(seed);
-        blocks = generator.generateBlocks(random);
-        width = blocks.length;
-        height = blocks[0].length;
-        gravity = DEFAULT_GRAVITY;
-        viewBounds = new Rectangle();
-        id = nextID++;
-        worlds.add(this);
-        entities = new Array<>();
-        particles = new Array<>();
-
-        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(WorldCreatePacket.create(this), true);
-
-        for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
-            blocks[x][y].setWorld(this);
-            blocks[x][y].getType().onWorldLoad(blocks[x][y]);
-        }
-    }
-
-
-    //AGAIN, ONLY USE ON PACKETS
     public World(WorldGenerator generator, long seed, int id){
 
         DestriliteGame.getInstance().getEventManager().addListener(this);
@@ -89,11 +59,13 @@ public class World implements EventListener, PacketListener {
         height = blocks[0].length;
         gravity = DEFAULT_GRAVITY;
         viewBounds = new Rectangle();
-        this.id = id;
-        nextID = id+1;
+        if(id == -1)this.id = nextID++;
+        else this.id = id;
         worlds.add(this);
         entities = new Array<>();
         particles = new Array<>();
+
+        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(WorldCreatePacket.create(this), true);
 
         for(int x = 0; x < width; x++)for(int y = 0; y < height; y++){
             blocks[x][y].setWorld(this);
@@ -104,17 +76,19 @@ public class World implements EventListener, PacketListener {
     public void createEntity(Entity entity){
         //TODO events, you know the deal
 
-
+        entity.setWorld(this);
         entities.add(entity);
-        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(EntityCreatePacket.create(entity), true);
     }
 
-    public void spawnParticle(Particle particle, boolean push){
+    public void spawnParticle(Particle particle, boolean push) {
         //TODO events, you know the deal
 
 
         particles.add(particle);
-        //if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(EntityCreatePacket.create(entity), true);
+        if (push) {
+            if (DestriliteGame.getInstance().isServer()) DestriliteGame.getInstance().getServer().sendToAll(ParticleCreatePacket.encode(particle), true);
+            else if(DestriliteGame.getInstance().isClient())DestriliteGame.getInstance().getClient().sendToServer(ParticleCreatePacket.encode(particle), true);
+        }
     }
 
     public BlockState setBlock(int x, int y, BlockType type){
@@ -174,11 +148,11 @@ public class World implements EventListener, PacketListener {
 
     public void render(SpriteBatch batch, float delta){
         for(Entity entity : entities)
-            if(entity.getLocation().getX() + entity.getWidth() >= viewBounds.x && entity.getLocation().getX() <= viewBounds.x + viewBounds.width
+            if(entity != null && entity.getLocation().getX() + entity.getWidth() >= viewBounds.x && entity.getLocation().getX() <= viewBounds.x + viewBounds.width
             && entity.getLocation().getY() + entity.getHeight() >= viewBounds.y && entity.getLocation().getY() <= viewBounds.y + viewBounds.height)
                 entity.render(batch, delta);
         for(Particle particle : particles)
-            if(particle.getLocation().getX() + particle.getWidth() >= viewBounds.x && particle.getLocation().getX() <= viewBounds.x + viewBounds.width
+            if(particle != null && particle.getLocation().getX() + particle.getWidth() >= viewBounds.x && particle.getLocation().getX() <= viewBounds.x + viewBounds.width
                     && particle.getLocation().getY() + particle.getHeight() >= viewBounds.y && particle.getLocation().getY() <= viewBounds.y + viewBounds.height)
                 particle.render(batch, delta);
     }
@@ -243,18 +217,40 @@ public class World implements EventListener, PacketListener {
         return open;
     }
 
+    public Entity getEntity(long id){
+        for(Entity entity : entities)if(entity.getID() == id)return entity;
+        return null;
+    }
+
+    public Particle getParticle(int id){
+        for(Particle particle : particles)if(particle.getID() == id)return particle;
+        return null;
+    }
+
     @PacketHandler
     public void onEntityCreate(EntityCreatePacket packet, Connection connection){
-        if(packet.world == id)createEntity(EntityCreatePacket.decode(packet));
+        if(packet.world == id && getEntity(packet.id) == null)createEntity(EntityCreatePacket.decode(packet));
+    }
+
+    @PacketHandler
+    public void onParticleCreate(ParticleCreatePacket packet, Connection connection){
+        if(packet.world == id && getParticle(packet.id) == null)spawnParticle(ParticleCreatePacket.decode(packet), DestriliteGame.getInstance().isServer());
+    }
+
+    @PacketHandler
+    public void onEntityChangeWorld(EntityChangeWorldPacket packet, Connection connection){
+        Entity entity = Entity.getEntity(packet.id);
+        if(entity != null && packet.world == id)entity.setWorld(this);
     }
 
     @PacketHandler
     public void onEntityMove(EntityMovePacket packet, Connection connection){
         Entity entity = EntityMovePacket.decode(packet);
-        entity.setLocation(packet.x,packet.y);
-        entity.getLocation().getVelocity().set(packet.velX, packet.velY, entity.getLocation().getVelocity().z);
-        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().getConnections().forEach(conn ->{
-            if(conn != connection)conn.sendUDP(packet);
-        });
+        if(entity != null && entity.getLocation().getWorld() == this) {
+            if(!entities.contains(entity, true))entities.add(entity);
+            entity.setLocation(packet.x, packet.y);
+            entity.getLocation().getVelocity().set(packet.velX, packet.velY, entity.getLocation().getVelocity().z);
+            if (DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAllExcept(packet, false, connection);
+        }
     }
 }

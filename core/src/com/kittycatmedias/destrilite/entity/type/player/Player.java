@@ -3,7 +3,6 @@ package com.kittycatmedias.destrilite.entity.type.player;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,20 +11,24 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.esotericsoftware.kryonet.Connection;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
-import com.kittycatmedias.destrilite.client.DestriliteScreen;
 import com.kittycatmedias.destrilite.client.GameScreen;
 import com.kittycatmedias.destrilite.entity.Entity;
 import com.kittycatmedias.destrilite.entity.EntityType;
+import com.kittycatmedias.destrilite.event.EventListener;
+import com.kittycatmedias.destrilite.network.packet.PacketHandler;
+import com.kittycatmedias.destrilite.network.packet.PacketListener;
+import com.kittycatmedias.destrilite.network.packet.packets.PlayerHeadMovePacket;
 import com.kittycatmedias.destrilite.world.Location;
 import com.kittycatmedias.destrilite.world.particle.Particle;
 import com.kittycatmedias.destrilite.world.particle.ParticleType;
+import com.sun.tools.jdi.Packet;
 
-public class Player {
+public class Player implements PacketListener, EventListener {
 
     private float health, dex, str, mag, mana, def, scale, deg, pixel, maxSpeed, jumpHeight, dashSpeed, dashTimer, lastDash, walk;
-    private final long ID;
+    private final long id;
     private int jumps, maxJumps;
 
     private boolean flip;
@@ -44,10 +47,11 @@ public class Player {
     }
 
     public Player(Race race, long id, String name){
+        players.add(this);
         this.race = race;
         this.name = name;
-        if(id == -1) this.ID = nextID++;
-        else this.ID = id;
+        if(id == -1) this.id = nextID++;
+        else this.id = id;
         jumps = 0;
         maxJumps = 1;
         scale = 1f;
@@ -65,11 +69,13 @@ public class Player {
         dashSpeed = 25;
         ObjectMap<String, Object> meta = new ObjectMap<>();
         meta.put("race",race.getID());
-        entity = new Entity(new Location(null, 0, 0), EntityType.PLAYER, meta, id+100);
+        entity = new Entity(new Location(null, 0, 0), EntityType.PLAYER, meta, id);
         entity.setWalksUp(true);
         entity.setWidth(Math.max(race.getHeadWidth(), race.getBodyWidth()) * scale);
         entity.setHeight((race.getHeadHeight()/2 + race.getBodyHeight() + 0.375f) * scale);
         limbLocation = new Location(null, 0, 0);
+        DestriliteGame.getInstance().getEventManager().addListener(this);
+        DestriliteGame.getInstance().getPacketManager().addListener(this);
     }
 
     public void update(float delta){
@@ -176,6 +182,15 @@ public class Player {
                 float x2 = proj.x, y2 = proj.y;
                 flip = x2 < entity.getLocation().getX() + entity.getWidth() / 2;
                 deg = MathUtils.radiansToDegrees * MathUtils.atan((y2 - (entity.getLocation().getY() + entity.getHeight() + bob)) / (x2 - (entity.getLocation().getX() + entity.getWidth() / 2)));
+
+                if(!DestriliteGame.getInstance().isNeitherClientNorServer()) {
+                    PlayerHeadMovePacket packet = new PlayerHeadMovePacket();
+                    packet.degrees = deg;
+                    packet.id = id;
+                    packet.flip = flip;
+                    if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAll(packet, false);
+                    else DestriliteGame.getInstance().getClient().sendToServer(packet, false);
+                }
             }
 
             float pixel = scale * 0.125f, x = entity.getLocation().getX(), y = entity.getLocation().getY() - pixel, height = entity.getHeight(), width = entity.getWidth(),
@@ -244,7 +259,7 @@ public class Player {
     }
 
     public long getID() {
-        return ID;
+        return id;
     }
 
     public float getStr() {
@@ -287,9 +302,22 @@ public class Player {
 
     public void dispose(){
         players.removeValue(this, true);
+        DestriliteGame.getInstance().getEventManager().removeListener(this);
+        DestriliteGame.getInstance().getPacketManager().removeListener(this);
+        entity.dispose();
     }
 
     public String getName() {
         return name;
+    }
+
+    @PacketHandler
+    public void onPlayerHeadMove(PlayerHeadMovePacket packet, Connection connection){
+        if(packet.id == id && !(GameScreen.getScreen() != null && GameScreen.getScreen().getPlayer() == this)){
+            Player player = getPlayer(packet.id);
+            player.deg = packet.degrees;
+            player.flip = packet.flip;
+        }
+        if(DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAllExcept(packet, false, connection);
     }
 }

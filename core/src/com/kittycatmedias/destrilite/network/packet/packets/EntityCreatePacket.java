@@ -19,7 +19,7 @@ public class EntityCreatePacket {
         packet.x = entity.getLocation().getX();
         packet.y = entity.getLocation().getY();
         packet.id = entity.getID();
-        packet.world = entity.getLocation().getWorld().getID();
+        packet.world = entity.getLocation().getWorld() == null ? -1 : entity.getLocation().getWorld().getID();
         packet.type = entity.getType().getID();
         Array<String> meta = entity.getMeta();
         Object[] metaValues = new Object[meta.size];
@@ -34,6 +34,7 @@ public class EntityCreatePacket {
     }
 
     public static Entity decode(EntityCreatePacket packet){
+        if(Entity.getEntity(packet.id) != null)return Entity.getEntity(packet.id);
         World world = World.getWorld(packet.world);
         Location location = new Location(world, packet.x, packet.y);
         EntityType type = EntityType.getType(packet.type);

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -30,7 +31,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainMenuScreen extends DestriliteScreen implements PacketListener, EventListener {
 
-    private VerticalGroup mainGroup, spGroup, mpGroup, optionsGroup;
+    private VerticalGroup mainGroup, spGroup, mpGroup, optionsGroup, playersGroup;
+    private Table spTable, mpTable, optionsTable, exitTable, setRaceTable, startSPTable, spBackTable,
+            startServerTable, startMPTable,optionsBackTable,mpBackTable,connectMPTable,cancelMPTable,playerTable;
+    private CheckBox clientOrServerCheck;
+    private Image spRaceImage;
+    private TextField ipField, portUDPField, portTCPField, nameField;
+    private Label nameLabel, mpLabel, versionLabel, optionsLabel, spLabel;
+
+    private TextButton.TextButtonStyle textButtonStyle;
+    private Label.LabelStyle labelStyle;
+    private CheckBox.CheckBoxStyle checkBoxStyle;
+
+    private AtomicBoolean serverMode;
 
     private Race race;
     private long id;
@@ -82,7 +95,7 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
     }
 
     private void loadMenu(){
-        AtomicBoolean serverMode = new AtomicBoolean();
+        serverMode = new AtomicBoolean();
 
         mainGroup = new VerticalGroup();
         mainGroup.space(3);
@@ -111,88 +124,92 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
 
 
         float buttonPad = 5;
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle = new TextButton.TextButtonStyle();
         textButtonStyle.up = game.getUISkin().getDrawable("button_up");
         textButtonStyle.down = game.getUISkin().getDrawable("button_down");
         textButtonStyle.pressedOffsetX = 1;
         textButtonStyle.pressedOffsetY = -1;
         textButtonStyle.font = game.getFont();
 
-        Table spTable = new Table();
+        spTable = new Table();
         Button spButton = new TextButton("Single Player", textButtonStyle);
         spButton.pad(buttonPad);
         spTable.add(spButton).width(100);
 
-        Table mpTable = new Table();
+        mpTable = new Table();
         Button mpButton = new TextButton("Multiplayer", textButtonStyle);
         mpButton.pad(buttonPad);
         mpTable.add(mpButton).width(100);
 
-        Table optionsTable = new Table();
+        optionsTable = new Table();
         Button optionsButton = new TextButton("Options", textButtonStyle);
         optionsButton.pad(buttonPad);
         optionsTable.add(optionsButton).width(100);
 
-        Table exitTable = new Table();
+        exitTable = new Table();
         Button exitButton = new TextButton("Exit", textButtonStyle);
         exitButton.pad(buttonPad);
         exitTable.add(exitButton).width(100);
 
-        Table setRaceTable = new Table();
+        setRaceTable = new Table();
         Button setRaceButton = new TextButton("Change Race", textButtonStyle);
         setRaceButton.pad(buttonPad);
         setRaceTable.add(setRaceButton);
 
-        Image spRaceImage = new Image(race.getHeadSprite());
+        spRaceImage = new Image(race.getHeadSprite());
         spRaceImage.setScaling(Scaling.fillX);
         setRaceTable.add(spRaceImage).width(19).expand().fill();
         setRaceTable.pack();
 
-        Table startSPTable = new Table();
+        startSPTable = new Table();
         Button startSPButton = new TextButton("Start", textButtonStyle);
         startSPButton.pad(buttonPad);
         startSPTable.add(startSPButton).width(100);
 
-        Table spBackTable = new Table();
+        spBackTable = new Table();
         Button spBackButton = new TextButton("Back", textButtonStyle);
         spBackButton.pad(buttonPad);
         spBackTable.add(spBackButton).width(100);
 
-        Table mpBackTable = new Table();
+        mpBackTable = new Table();
         Button mpBackButton = new TextButton("Back", textButtonStyle);
         mpBackButton.pad(buttonPad);
         mpBackTable.add(mpBackButton).width(100);
 
-        Table optionsBackTable = new Table();
+        optionsBackTable = new Table();
         Button optionsBackButton = new TextButton("Back", textButtonStyle);
         optionsBackButton.pad(buttonPad);
         optionsBackTable.add(optionsBackButton).width(100);
 
-        Table cancelMPTable = new Table();
+        cancelMPTable = new Table();
         Button cancelMPButton = new TextButton("Cancel", textButtonStyle);
         cancelMPButton.pad(buttonPad);
         cancelMPTable.add(cancelMPButton).width(100);
 
-        Table startMPTable = new Table();
+        startMPTable = new Table();
         Button startMPButton = new TextButton("Start", textButtonStyle);
         startMPButton.pad(buttonPad);
         startMPTable.add(startMPButton).width(100);
 
-        Table connectMPTable = new Table();
+        connectMPTable = new Table();
         Button connectMPButton = new TextButton("Connect", textButtonStyle);
         connectMPButton.pad(buttonPad);
         connectMPTable.add(connectMPButton).width(100);
 
-        Table startServerTable = new Table();
+        startServerTable = new Table();
         Button startServerButton = new TextButton("Start Server", textButtonStyle);
         startServerButton.pad(buttonPad);
         startServerTable.add(startServerButton).width(100);
 
+        playerTable = new Table();
+        playersGroup = new VerticalGroup();
+        playersGroup.pad(buttonPad);
+        playerTable.add(playersGroup);
 
 
-        CheckBox.CheckBoxStyle checkBoxStyle = new CheckBox.CheckBoxStyle(game.getUISkin().getDrawable("button_up"), game.getUISkin().getDrawable("button_down"), game.getFont(), Color.WHITE);
+        checkBoxStyle = new CheckBox.CheckBoxStyle(game.getUISkin().getDrawable("button_up"), game.getUISkin().getDrawable("button_down"), game.getFont(), Color.WHITE);
 
-        CheckBox clientOrServerCheck = new CheckBox("Server", checkBoxStyle);
+        clientOrServerCheck = new CheckBox("Server", checkBoxStyle);
         clientOrServerCheck.pad(buttonPad);
 
         TextField.TextFieldStyle style = new TextField.TextFieldStyle();
@@ -200,33 +217,33 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         style.font = game.getFont();
         style.fontColor = Color.WHITE;
 
-        TextField ipField = new TextField("IP", style);
+        ipField = new TextField("IP", style);
         ipField.setWidth(100);
         ipField.setAlignment(Align.center);
-        TextField portUDPField = new TextField("37189", style);
+        portUDPField = new TextField("37189", style);
         portUDPField.setAlignment(Align.center);
         portUDPField.setWidth(100);
-        TextField portTCPField = new TextField("37190", style);
+        portTCPField = new TextField("37190", style);
         portTCPField.setAlignment(Align.center);
         portTCPField.setWidth(100);
-        TextField nameField = new TextField("Name", style);
+        nameField = new TextField("Name", style);
         nameField.setAlignment(Align.center);
         nameField.setWidth(100);
 
-        Label.LabelStyle labelStyle = new Label.LabelStyle(game.getFont(), Color.CORAL);
+        labelStyle = new Label.LabelStyle(game.getFont(), Color.CORAL);
 
-        Label nameLabel = new Label(DestriliteGame.NAME.toUpperCase(), labelStyle);
+        nameLabel = new Label(DestriliteGame.NAME.toUpperCase(), labelStyle);
         nameLabel.setFontScale(3f);
 
-        Label versionLabel = new Label(DestriliteGame.VERSION, labelStyle);
+        versionLabel = new Label(DestriliteGame.VERSION, labelStyle);
 
-        Label spLabel = new Label("Single Player", labelStyle);
+        spLabel = new Label("Single Player", labelStyle);
         spLabel.setFontScale(2f);
 
-        Label mpLabel = new Label("Multiplayer", labelStyle);
+        mpLabel = new Label("Multiplayer", labelStyle);
         mpLabel.setFontScale(2f);
 
-        Label optionsLabel = new Label("Options", labelStyle);
+        optionsLabel = new Label("Options", labelStyle);
         optionsLabel.setFontScale(2f);
 
 
@@ -268,7 +285,7 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         startSPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Player player = new Player(race, -1, "test");
+                Player player = new Player(race, -1, "");
                 game.changeScreen(new GameScreen(game, null, player));
             }
         });
@@ -296,28 +313,14 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
         cancelMPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if(serverMode.get()){
-                    game.getServer().sendToAll(new ServerClosePacket(), true);
-                    game.stopServer();
-                }
-                else game.stopClient();
-                mpGroup.addActorAfter(mpLabel, mpBackTable);
-                if(serverMode.get())mpGroup.addActorAfter(mpLabel, startServerTable);
-                else mpGroup.addActorAfter(mpLabel, connectMPTable);
-                mpGroup.addActorAfter(mpLabel, portTCPField);
-                mpGroup.addActorAfter(mpLabel, portUDPField);
-                mpGroup.addActorAfter(portTCPField, nameField);
-                if(!serverMode.get())mpGroup.addActorAfter(mpLabel, ipField);
-                mpGroup.addActorAfter(mpLabel, clientOrServerCheck);
-                mpGroup.removeActor(cancelMPTable);
+                cancelButton();
             }
         });
         startMPButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.getServer().setAllowing(false);
-                World world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
-                game.getServer().sendToAll(WorldCreatePacket.create(world), true);
+                World world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong(), -1);
                 SetWorldPacket packet = new SetWorldPacket();
                 packet.world = world.getID();
                 game.getServer().sendToAll(packet, true);
@@ -332,6 +335,8 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                 try{
                     game.createClient(ipField.getText().replaceAll(" ", ""), Integer.parseInt(portUDPField.getText().replaceAll(" ", "")), Integer.parseInt(portTCPField.getText().replaceAll(" ", "")));
                     PlayerConnectPacket packet = new PlayerConnectPacket();
+                    for(Player p : players)p.dispose();
+                    players = new Array<>();
                     id = MathUtils.random.nextLong();
                     packet.id = id;
                     packet.name = nameField.getText().trim();
@@ -345,7 +350,7 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                     mpGroup.removeActor(clientOrServerCheck);
                     mpGroup.removeActor(nameField);
                     mpGroup.addActor(cancelMPTable);
-                    players = new Array<>();
+                    mpGroup.addActor(playerTable);
                 }catch(Exception e){e.printStackTrace();}
             }
         });
@@ -362,7 +367,9 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                     mpGroup.removeActor(nameField);
                     mpGroup.addActor(startMPTable);
                     mpGroup.addActor(cancelMPTable);
+                    mpGroup.addActor(playerTable);
                     connections = new ObjectMap<>();
+                    for(Player p : players)p.dispose();
                     players = new Array<>();
                     player = new Player(Race.getRace(0), MathUtils.random.nextLong(), nameField.getText().trim());
                     players.add(player);
@@ -431,6 +438,8 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
     public void onPlayerConnect(PlayerConnectPacket packet, Connection connection){
         Player player = new Player(Race.getRace(packet.race), packet.id, packet.name);
         players.add(player);
+
+
         if(game.isServer()){
             connections.put(connection, player);
             game.getServer().sendToAll(packet, true);
@@ -441,14 +450,37 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
                 pa.name = p.getName();
                 connection.sendTCP(pa);
             }
-        }else if(player.getID() == id)this.player = player;
+        }
+        if(player.getID() == id)this.player = player;
+        else{
+            Label playerLabel = new Label(packet.name, labelStyle);
+            playerLabel.setName(packet.name);
+            playerLabel.setFontScale(1f);
+            playersGroup.addActor(playerLabel);
+        }
     }
 
     @PacketHandler
     public void onPlayerDisconnect(PlayerDisconnectPacket packet, Connection connection){
         Player player = Player.getPlayer(packet.id);
-        if(player != null)player.dispose();
-        players.removeValue(player, true);
+        if(player != null){
+
+            for(Actor actor : playersGroup.getChildren())if(actor instanceof Label){
+                Label label = (Label) actor;
+                if(label.getName().equals(player.getName())){
+                    playersGroup.removeActor(actor);
+                    break;
+                }
+            }
+
+            player.dispose();
+            players.removeValue(player, true);
+        }
+    }
+
+    @PacketHandler
+    public void onEntityCreate(EntityCreatePacket packet, Connection connection){
+        EntityCreatePacket.decode(packet);
     }
 
     @EventHandler
@@ -461,5 +493,25 @@ public class MainMenuScreen extends DestriliteScreen implements PacketListener, 
             onPlayerDisconnect(packet, event.getConncetion());
             game.getServer().sendToAll(packet, true);
         }
+    }
+
+    private void cancelButton(){
+        if(serverMode.get()){
+            game.getServer().sendToAll(new ServerClosePacket(), true);
+            game.stopServer();
+        }
+        else game.stopClient();
+        mpGroup.addActorAfter(mpLabel, mpBackTable);
+        if(serverMode.get())mpGroup.addActorAfter(mpLabel, startServerTable);
+        else mpGroup.addActorAfter(mpLabel, connectMPTable);
+        mpGroup.addActorAfter(mpLabel, portTCPField);
+        mpGroup.addActorAfter(mpLabel, portUDPField);
+        mpGroup.addActorAfter(portTCPField, nameField);
+        if(!serverMode.get())mpGroup.addActorAfter(mpLabel, ipField);
+        mpGroup.addActorAfter(mpLabel, clientOrServerCheck);
+        mpGroup.removeActor(cancelMPTable);
+        mpGroup.removeActor(startMPTable);
+        mpGroup.removeActor(playerTable);
+        playersGroup.clearChildren();
     }
 }

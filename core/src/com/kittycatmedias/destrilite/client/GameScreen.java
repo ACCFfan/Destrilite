@@ -1,5 +1,6 @@
 package com.kittycatmedias.destrilite.client;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -55,7 +56,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         assetManager.load("atlas/player.atlas", TextureAtlas.class);
         assetManager.load("atlas/particle.atlas", TextureAtlas.class);
 
-        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong());
+        if(!game.isClient() && this.world == null)this.world = new World(WorldGenerator.GRASSLANDS, MathUtils.random.nextLong(), -1);
 
         World.setCurrentWorld(this.world);
 
@@ -208,5 +209,14 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
 
     public OrthographicCamera getCamera() {
         return camera;
+    }
+
+    public static GameScreen getScreen(){
+        if(DestriliteGame.getInstance().getScreen() instanceof GameScreen) return (GameScreen)DestriliteGame.getInstance().getScreen();
+        return null;
+    }
+
+    public Array<Player> getPlayers(){
+        return players;
     }
 }

@@ -6,8 +6,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.client.GameScreen;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityChangeWorldPacket;
+import com.kittycatmedias.destrilite.network.packet.packets.EntityCreatePacket;
 import com.kittycatmedias.destrilite.network.packet.packets.EntityMovePacket;
 import com.kittycatmedias.destrilite.world.Location;
+import com.kittycatmedias.destrilite.world.World;
 import com.kittycatmedias.destrilite.world.block.BlockState;
 
 public class Entity {
@@ -28,29 +31,6 @@ public class Entity {
 
     public static final int NOTHING = -1, FROM_LEFT = 0, FROM_RIGHT = 1, FROM_TOP = 2, FROM_BOTTOM = 3;
 
-    public Entity(Location location, EntityType type, ObjectMap<String, Object> meta){
-        this.location = location;
-        startLocation = location.copy();
-        this.type = type;
-        this.walksUp = getType().walksUp();
-        hasGravity = type.hasGravity();
-        width = type.getWidth();
-        height = type.getHeight();
-        bounds = new Rectangle(location.getX(), location.getY(), width, height);
-        id = nextID++;
-        hasCollision = type.isCollidable();
-        grounded = false;
-        health = type.getMaxHealth();
-        if(meta == null)this.meta = new ObjectMap<>();
-        else this.meta = meta;
-        entities.add(this);
-
-        type.onMetaChange(this);
-        type.onCreate(this);
-    }
-
-
-    //ONLY FOR USE FROM PACKETS
     public Entity(Location location, EntityType type, ObjectMap<String, Object> meta, long id){
         this.location = location;
         startLocation = location.copy();
@@ -60,17 +40,21 @@ public class Entity {
         width = type.getWidth();
         height = type.getHeight();
         bounds = new Rectangle(location.getX(), location.getY(), width, height);
-        this.id = id;
-        nextID = id+1;
+        if(id != -1)this.id = id;
+        else this.id = nextID++;
         hasCollision = type.isCollidable();
         grounded = false;
         health = type.getMaxHealth();
         if(meta == null)this.meta = new ObjectMap<>();
         else this.meta = meta;
-        entities.add(this);
+        if(getEntity(this.id) == null) {
+            entities.add(this);
+            type.onMetaChange(this);
+            type.onCreate(this);
 
-        type.onMetaChange(this);
-        type.onCreate(this);
+            if (type != EntityType.PLAYER && DestriliteGame.getInstance().isServer())
+                DestriliteGame.getInstance().getServer().sendToAll(EntityCreatePacket.create(this), true);
+        }else dispose();
     }
 
     public void update(float delta){
@@ -150,7 +134,7 @@ public class Entity {
                     dirtyPosition = false;
                     tcpPosition = false;
                 }
-            }else if(screen.getPlayer().getEntity() == this){
+            }else if(DestriliteGame.getInstance().isClient() && screen.getPlayer().getEntity() == this){
                 DestriliteGame.getInstance().getClient().sendToServer(EntityMovePacket.create(this),tcpPosition);
                 dirtyPosition = false;
                 tcpPosition = false;
@@ -170,15 +154,14 @@ public class Entity {
     public void setLocation(Location location){
         this.location.setX(location.getX());
         this.location.setY(location.getY());
-        this.location.setWorld(location.getWorld());
         bounds.x = location.getX();
         bounds.y = location.getY();
         this.location.setVelocity(location.getVelocity());
 
         this.startLocation.setX(location.getX());
         this.startLocation.setY(location.getY());
-        this.startLocation.setWorld(location.getWorld());
         this.startLocation.setVelocity(location.getVelocity());
+        if(location.getWorld() != this.location.getWorld())setWorld(location.getWorld());
         markDirtyPosition(true);
 
 
@@ -214,9 +197,10 @@ public class Entity {
     }
 
     public void dispose(){
-        entities.removeValue(this, true);
-
-        type.onDestroy(this);
+        if(entities.contains(this, true)){
+            type.onDestroy(this);
+            entities.removeValue(this, true);
+        }
     }
 
     public int getHealth() {
@@ -291,7 +275,7 @@ public class Entity {
         type.onCollide(this, state, from);
     }
 
-    public int invertFrom(int from){
+    public static int invertFrom(int from){
         if(from == FROM_LEFT)return FROM_RIGHT;
         else if(from == FROM_RIGHT)return FROM_LEFT;
         else if(from == FROM_TOP)return FROM_BOTTOM;
@@ -326,5 +310,16 @@ public class Entity {
 
     public void reset(){
         setLocation(startLocation);
+    }
+
+    public void setWorld(World world){
+        if(DestriliteGame.getInstance().isServer()) {
+            EntityChangeWorldPacket packet = new EntityChangeWorldPacket();
+            packet.id = id;
+            packet.world = world.getID();
+            DestriliteGame.getInstance().getServer().sendToAll(packet, true);
+        }
+        location.setWorld(world);
+        startLocation.setWorld(world);
     }
 }
