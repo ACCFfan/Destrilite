@@ -12,7 +12,7 @@ import com.kittycatmedias.destrilite.event.events.network.ConnectionMadeEvent;
 import com.kittycatmedias.destrilite.network.packet.packets.*;
 import com.sun.tools.jdi.Packet;
 
-public class DestriliteServer extends Listener {
+public class DestriliteServer implements Listener {
     public static final int DEFAULT_PORT = 37189;
 
     private final Server server;
@@ -27,7 +27,7 @@ public class DestriliteServer extends Listener {
     private boolean ready;
 
     public DestriliteServer(DestriliteGame game) {
-        server = new Server(131072,131072);
+        server = new Server(1048576,1048576);
         UDP_PORT = DEFAULT_PORT;
         TCP_PORT = DEFAULT_PORT+1;
 
@@ -66,7 +66,6 @@ public class DestriliteServer extends Listener {
         }catch(Exception e){
             e.printStackTrace();
         }
-
     }
 
     public void start(){

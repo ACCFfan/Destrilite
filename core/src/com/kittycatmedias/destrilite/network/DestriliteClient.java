@@ -7,7 +7,7 @@ import com.kittycatmedias.destrilite.client.DestriliteGame;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionDisconnectedEvent;
 import com.kittycatmedias.destrilite.event.events.network.ConnectionMadeEvent;
 
-public class DestriliteClient extends Listener {
+public class DestriliteClient implements Listener {
     private final Client client;
     private final DestriliteGame game;
 
@@ -15,7 +15,7 @@ public class DestriliteClient extends Listener {
     private final int UDP_PORT, TCP_PORT;
 
     public DestriliteClient(DestriliteGame game, String ip) {
-        client = new Client(131072,131072);
+        client = new Client(1048576,1048576);
         UDP_PORT = DestriliteServer.DEFAULT_PORT;
         TCP_PORT = DestriliteServer.DEFAULT_PORT+1;
         IP = ip;

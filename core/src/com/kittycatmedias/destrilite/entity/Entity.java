@@ -128,7 +128,6 @@ public class Entity {
             GameScreen screen = (GameScreen) DestriliteGame.getInstance().getScreen();
             if(DestriliteGame.getInstance().isServer()){
                 if(dirtyPosition && (type != EntityType.PLAYER || screen.getPlayer().getEntity() == this)) {
-                    //TODO packet
                     DestriliteGame.getInstance().getServer().sendToAll(EntityMovePacket.create(this),tcpPosition);
 
                     dirtyPosition = false;
@@ -151,7 +150,7 @@ public class Entity {
         return location;
     }
 
-    public void setLocation(Location location){
+    public void setLocation(Location location, boolean tcp){
         this.location.setX(location.getX());
         this.location.setY(location.getY());
         bounds.x = location.getX();
@@ -162,28 +161,28 @@ public class Entity {
         this.startLocation.setY(location.getY());
         this.startLocation.setVelocity(location.getVelocity());
         if(location.getWorld() != this.location.getWorld())setWorld(location.getWorld());
-        markDirtyPosition(true);
+        markDirtyPosition(tcp);
 
 
         //TODO events
     }
 
-    public void setLocation(float x, float y){
+    public void setLocation(float x, float y, boolean tcp){
         location.setX(x);
         location.setY(y);
         bounds.x = x;
         bounds.y = y;
-        markDirtyPosition(true);
+        markDirtyPosition(tcp);
     }
 
 
     private void markDirtyPosition(boolean tcp){
-        if(!tcp)this.tcpPosition = true;
+        if(tcp)this.tcpPosition = true;
         dirtyPosition = true;
     }
 
     private void markDirty(boolean tcp){
-        if(!tcp)this.tcp = true;
+        if(tcp)this.tcp = true;
         dirty = true;
     }
 
@@ -309,7 +308,7 @@ public class Entity {
     }
 
     public void reset(){
-        setLocation(startLocation);
+        setLocation(startLocation, true);
     }
 
     public void setWorld(World world){

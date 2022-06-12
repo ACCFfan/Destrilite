@@ -60,7 +60,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
 
         World.setCurrentWorld(this.world);
 
-        player.getEntity().setLocation(new Location(this.world, 30, 80));
+        player.getEntity().setLocation(new Location(this.world, 30, 80), true);
         this.world.createEntity(player.getEntity());
 
         bufferViewMatrix = new Matrix4();
@@ -198,7 +198,7 @@ public class GameScreen extends DestriliteScreen implements EventListener, Packe
         if(!players.contains(player,true)){
             players.add(player);
 
-            player.getEntity().setLocation(new Location(this.world, 30, 80));
+            player.getEntity().setLocation(new Location(this.world, 30, 80), true);
             this.world.createEntity(player.getEntity());
         }
     }

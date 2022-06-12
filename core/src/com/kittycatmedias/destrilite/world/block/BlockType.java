@@ -87,21 +87,21 @@ public class BlockType {
         //        (location.getY() >= state.getY() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight())) + "," + state.getX() + "," + state.getY() + "," + location.getY());
 
         if(entity.walksUp() && ((from == Entity.FROM_LEFT && location.getVelocity().x > 0) || (from == Entity.FROM_RIGHT && location.getVelocity().x < 0)) && location.getY() >= state.getY() && state.getWorld().aboveIsOpen(state.getX(), state.getY(), entity.getHeight())){
-            entity.setLocation(location.getX(), state.getY()+1);
+            entity.setLocation(location.getX(), state.getY()+1, false);
             //location.getVelocity().y = Math.max(location.getVelocity().y, Math.max((1-(location.getY() - state.getY())) * 6 * (location.getWorld().getGravity() / World.DEFAULT_GRAVITY), 0));
         }
         else if(from == Entity.FROM_LEFT){
-            entity.setLocation(state.getX() - entity.getWidth(), location.getY());
+            entity.setLocation(state.getX() - entity.getWidth(), location.getY(), false);
             location.getVelocity().x = 0;
         } else if(from == Entity.FROM_RIGHT){
-            entity.setLocation(state.getX()+1, location.getY());
+            entity.setLocation(state.getX()+1, location.getY(), false);
             location.getVelocity().x = 0;
         } else if(from == Entity.FROM_BOTTOM){
-            entity.setLocation(location.getX(), state.getY()-entity.getHeight());
+            entity.setLocation(location.getX(), state.getY()-entity.getHeight(), false);
             if(location.getVelocity().y > 0)location.getVelocity().y = 0;
         } else {
             entity.setGrounded(true);
-            entity.setLocation(location.getX(), state.getY()+1);
+            entity.setLocation(location.getX(), state.getY()+1, false);
             if(location.getVelocity().y < 0)location.getVelocity().y = 0;
         }
     }

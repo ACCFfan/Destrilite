@@ -61,7 +61,7 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"
         implementation 'com.github.aliasifk:HackLights:dd08b55956:sources'
-        implementation "com.esotericsoftware:kryonet:2.22.0-RC1"
+        implementation "com.github.crykn:kryonet:2.22.7"
         
     }
 }

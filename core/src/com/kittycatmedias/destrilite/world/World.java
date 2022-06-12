@@ -240,7 +240,10 @@ public class World implements EventListener, PacketListener {
     @PacketHandler
     public void onEntityChangeWorld(EntityChangeWorldPacket packet, Connection connection){
         Entity entity = Entity.getEntity(packet.id);
-        if(entity != null && packet.world == id)entity.setWorld(this);
+        if(entity != null && packet.world == id){
+            entity.setWorld(this);
+            if (DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAllExcept(packet, false, connection);
+        }
     }
 
     @PacketHandler
@@ -248,7 +251,7 @@ public class World implements EventListener, PacketListener {
         Entity entity = EntityMovePacket.decode(packet);
         if(entity != null && entity.getLocation().getWorld() == this) {
             if(!entities.contains(entity, true))entities.add(entity);
-            entity.setLocation(packet.x, packet.y);
+            entity.setLocation(packet.x, packet.y, false);
             entity.getLocation().getVelocity().set(packet.velX, packet.velY, entity.getLocation().getVelocity().z);
             if (DestriliteGame.getInstance().isServer())DestriliteGame.getInstance().getServer().sendToAllExcept(packet, false, connection);
         }
